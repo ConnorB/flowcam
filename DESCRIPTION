@@ -12,7 +12,7 @@ Description: Provides functions to query camera metadata, list image filenames,
     Authentication via the API_USGS_PAT environment variable follows the same
     convention used by 'dataRetrieval'.
 License: AGPL (>= 3) + file LICENSE
-URL: https://github.com/ConnorB/flowcam
+URL: https://github.com/ConnorB/flowcam, https://connorb.github.io/flowcam/
 BugReports: https://github.com/ConnorB/flowcam/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -25,9 +25,9 @@ Suggests:
     dataRetrieval,
     httptest2,
     knitr,
-    rmarkdown,
+    quarto,
     testthat (>= 3.0.0),
     withr
-VignetteBuilder: knitr
+VignetteBuilder: quarto
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0.9000

@@ -1,17 +1,19 @@
 ---
 title: "Monitoring the Pecos River with flowcam and dataRetrieval"
-output: rmarkdown::html_vignette
+format: html
+execute:
+  eval: false
 vignette: >
   %\VignetteIndexEntry{Monitoring the Pecos River with flowcam and dataRetrieval}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include = FALSE}
+```{r setup}
+#| include: false
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment  = "#>",
-  eval     = FALSE
+  comment  = "#>"
 )
 ```
 

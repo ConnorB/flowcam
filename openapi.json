@@ -1,0 +1,799 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "National Imagery Management System API",
+    "version" : "0.0.1",
+    "description": "The National Imagery Management System (NIMS) collects, stores, processes, and delivers imagery from USGS gaging stations for public consumption. This API provides programmatic access to NIMS resources, including camera metadata and image file listings.\n\nThe API enables clients to:\n- Query available cameras and their metadata.\n- Retrieve lists of image filenames associated with specific cameras, with support for filtering by date and other parameters.\n\nImage Access: To fetch actual image files, first query `/cameras` to obtain the camera’s base path fields (`overlayDir`, `thumbDir`, `smallDir`, or `tlDir`). Then call `/listFiles` for that `camId` to get the image filenames. Construct a full URL by concatenating the appropriate base path with the returned filename (e.g., `overlayDir + filename` for full-size images; `thumbDir + filename` for thumbnails; `smallDir + filename` for 720px images). Timelapse videos follow `tlDir + camId + '_720.mp4'`.\n\nNote: The v0 endpoints represent the legacy version of the API. They are fully supported but do not follow RESTful best practices. Future versions (v1 and beyond) will adopt RESTful standards for improved consistency and interoperability.",
+    "contact": {
+        "name": "National Imagery Management System",
+        "url": "https://api.waterdata.usgs.gov/docs/nims"
+      },
+    "license": {
+        "name": "US Government work in the public domain",
+        "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "termsOfService": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "servers" : [ {
+    "url" : "https://api.waterdata.usgs.gov/nims/v0"
+  } ],
+    "tags": [
+      { "name": "Cameras", "description": "Camera catalog queries" },
+    { "name": "Images", "description": "Image listing operations" }
+  ],
+  "paths": {
+    "/cameras": {
+      "get": {
+        "tags": ["Cameras"],
+        "summary": "Query cameras",
+        "description": "Returns a list of cameras. You can filter by `camId` or `siteId`.",
+        "parameters": [
+          {
+            "name": "camId",
+            "in": "query",
+            "description": "Specific camera ID to fetch.",
+            "required": false,
+            "example": "WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "siteId",
+            "in": "query",
+            "description": "NWIS site ID to fetch cameras at this site.",
+            "required": false,
+            "example": "05366800",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "returnFields",
+            "in": "query",
+            "description": "A comma-separated list of camera fields to include in the response. For a list of all available fields, please refer to the Camera schema. (Note that `camId` field returned in all requests, regardless of whether it is provided in the `returnFields` query parameter)",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response. Returns a list of cameras.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": { "type": "string", "example": "*" },
+                "description": "CORS header"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Camera" }
+                },
+                "examples": {
+                  "allCameras": {
+                    "summary": "All cameras (default)",
+                    "value": [
+                      {
+                        "camId": "CAM123",
+                        "nwisId": "01234567",
+                        "camName": "Little River South Bank",
+                        "camDesc": "Camera at Little River South Bank gaging station",
+                        "lat": "44.966024",
+                        "lng":  "-87.91303",
+                        "stateAbrv":  "WI",
+                        "tz":  "US/Central",
+                        "defaultPCode":  "00065",
+                        "createdDate": "2024-01-01T00:00:00.000Z",
+                        "modifiedDate": "2025-01-01T00:00:00.000Z",
+                        "newestImageDT": "2026-01-01T00:00:00.000Z",
+                        "TL_enabled": true,
+                        "TL_lastGeneratedDT": "2026-01-01T01:00:00.000Z",
+                        "TL_lastImageUsedDT": "2026-01-01T00:00:00.000Z",
+                        "hideCam": false,
+                        "overlayDir": "https://usgs-nims-images.s3.amazonaws.com/overlay/CAM123/",
+                        "thumbDir": "https://usgs-nims-images.s3.amazonaws.com/thumbnail/CAM123/",
+                        "smallDir": "https://usgs-nims-images.s3.amazonaws.com/720/CAM123/",
+                        "tlDir": "https://usgs-nims-images.s3.amazonaws.com/timelapse/CAM123/",
+                        "ingest": {
+                          "period": "247",
+                          "intr": 60,
+                          "hourlyStart": true,
+                          "specificArr": ["12:06", "14:06"]
+                        },
+                        "locus": "aws"
+                      },
+                      {
+                        "camId": "CAM124",
+                        "nwisId": "01234567",
+                        "camName": "Little River North Bank",
+                        "camDesc": "Camera at Little River North Bank gaging station",
+                        "lat": "44.966024",
+                        "lng":  "-87.91303",
+                        "stateAbrv":  "WI",
+                        "tz":  "US/Central",
+                        "defaultPCode":  "00065",
+                        "createdDate": "2024-01-01T01:00:00.000Z",
+                        "modifiedDate": "2025-06-01T00:00:00.000Z",
+                        "newestImageDT": "2026-01-01T00:00:00.000Z",
+                        "TL_enabled": true,
+                        "TL_lastGeneratedDT": "2026-01-01T01:00:00.000Z",
+                        "TL_lastImageUsedDT": "2026-01-01T00:00:00.000Z",
+                        "hideCam": false,
+                        "overlayDir": "https://usgs-nims-images.s3.amazonaws.com/overlay/CAM124/",
+                        "thumbDir": "https://usgs-nims-images.s3.amazonaws.com/thumbnail/CAM124/",
+                        "smallDir": "https://usgs-nims-images.s3.amazonaws.com/720/CAM124/",
+                        "tlDir": "https://usgs-nims-images.s3.amazonaws.com/timelapse/CAM124/",
+                        "ingest": {
+                          "period": "daylight",
+                          "intr": 60,
+                          "hourlyStart": true,
+                          "daylightStartOffset": 30,
+                          "daylightEndOffset": 30
+                        },
+                        "locus": "aws"
+                      },
+                      {
+                        "camId": "CAM125",
+                        "nwisId": "12345678",
+                        "camName": "Great River",
+                        "camDesc": "Camera at Great River gaging station",
+                        "lat": "40.714886",
+                        "lng":  "-73.157632",
+                        "stateAbrv":  "NY",
+                        "tz":  "US/Eastern",
+                        "defaultPCode":  "00060",
+                        "createdDate": "2024-01-01T02:00:00.000Z",
+                        "modifiedDate": "2025-09-01T00:00:00.000Z",
+                        "newestImageDT": "2025-12-31:00:00.000Z",
+                        "TL_enabled": false,
+                        "hideCam": false,
+                        "overlayDir": "https://usgs-nims-images.s3.amazonaws.com/overlay/CAM125/",
+                        "thumbDir": "https://usgs-nims-images.s3.amazonaws.com/thumbnail/CAM125/",
+                        "smallDir": "https://usgs-nims-images.s3.amazonaws.com/720/CAM125/",
+                        "tlDir": "https://usgs-nims-images.s3.amazonaws.com/timelapse/CAM125/",
+                        "ingest": {
+                          "period": "start-end",
+                          "intr": 60,
+                          "hourlyStart": true,
+                          "periodStart": "05:00",
+                          "periodEnd": "21:00"
+                        },
+                        "locus": "aws"
+                      }
+                    ]
+                  },
+                  "singleCameraById": {
+                    "summary": "Single camera lookup by camera ID",
+                    "value": [
+                      {
+                        "camId": "CAM123",
+                        "nwisId": "01234567",
+                        "camName": "Little River South Bank",
+                        "camDesc": "Camera at Little River South Bank gaging station",
+                        "lat": "44.966024",
+                        "lng":  "-87.91303",
+                        "stateAbrv":  "WI",
+                        "tz":  "US/Central",
+                        "defaultPCode":  "00065",
+                        "createdDate": "2024-01-01T00:00:00.000Z",
+                        "modifiedDate": "2025-01-01T00:00:00.000Z",
+                        "newestImageDT": "2026-01-01T00:00:00.000Z",
+                        "TL_enabled": true,
+                        "TL_lastGeneratedDT": "2026-01-01T01:00:00.000Z",
+                        "TL_lastImageUsedDT": "2026-01-01T00:00:00.000Z",
+                        "hideCam": false,
+                        "overlayDir": "https://usgs-nims-images.s3.amazonaws.com/overlay/CAM123/",
+                        "thumbDir": "https://usgs-nims-images.s3.amazonaws.com/thumbnail/CAM123/",
+                        "smallDir": "https://usgs-nims-images.s3.amazonaws.com/720/CAM123/",
+                        "tlDir": "https://usgs-nims-images.s3.amazonaws.com/timelapse/CAM123/",
+                        "ingest": {
+                          "period": "247",
+                          "intr": 60,
+                          "hourlyStart": true,
+                          "specificArr": ["12:06", "14:06"]
+                        },
+                        "locus": "aws"
+                      }
+                    ]
+                  },
+                  "camerasBySiteId": {
+                    "summary": "Camera look up by NWIS site ID",
+                    "value": [
+                      {
+                        "camId": "CAM123",
+                        "nwisId": "01234567",
+                        "camName": "Little River South Bank",
+                        "camDesc": "Camera at Little River South Bank gaging station",
+                        "lat": "44.966024",
+                        "lng":  "-87.91303",
+                        "stateAbrv":  "WI",
+                        "tz":  "US/Central",
+                        "defaultPCode":  "00065",
+                        "createdDate": "2024-01-01T00:00:00.000Z",
+                        "modifiedDate": "2025-01-01T00:00:00.000Z",
+                        "newestImageDT": "2026-01-01T00:00:00.000Z",
+                        "TL_enabled": true,
+                        "TL_lastGeneratedDT": "2026-01-01T01:00:00.000Z",
+                        "TL_lastImageUsedDT": "2026-01-01T00:00:00.000Z",
+                        "hideCam": false,
+                        "overlayDir": "https://usgs-nims-images.s3.amazonaws.com/overlay/CAM123/",
+                        "thumbDir": "https://usgs-nims-images.s3.amazonaws.com/thumbnail/CAM123/",
+                        "smallDir": "https://usgs-nims-images.s3.amazonaws.com/720/CAM123/",
+                        "tlDir": "https://usgs-nims-images.s3.amazonaws.com/timelapse/CAM123/",
+                        "ingest": {
+                          "period": "247",
+                          "intr": 60,
+                          "hourlyStart": true,
+                          "specificArr": ["12:06", "14:06"]
+                        },
+                        "locus": "aws"
+                      },
+                      {
+                        "camId": "CAM124",
+                        "nwisId": "01234567",
+                        "camName": "Little River North Bank",
+                        "camDesc": "Camera at Little River North Bank gaging station",
+                        "lat": "44.966024",
+                        "lng":  "-87.91303",
+                        "stateAbrv":  "WI",
+                        "tz":  "US/Central",
+                        "defaultPCode":  "00065",
+                        "createdDate": "2024-01-01T01:00:00.000Z",
+                        "modifiedDate": "2025-06-01T00:00:00.000Z",
+                        "newestImageDT": "2026-01-01T00:00:00.000Z",
+                        "TL_enabled": true,
+                        "TL_lastGeneratedDT": "2026-01-01T01:00:00.000Z",
+                        "TL_lastImageUsedDT": "2026-01-01T00:00:00.000Z",
+                        "hideCam": false,
+                        "overlayDir": "https://usgs-nims-images.s3.amazonaws.com/overlay/CAM124/",
+                        "thumbDir": "https://usgs-nims-images.s3.amazonaws.com/thumbnail/CAM124/",
+                        "smallDir": "https://usgs-nims-images.s3.amazonaws.com/720/CAM124/",
+                        "tlDir": "https://usgs-nims-images.s3.amazonaws.com/timelapse/CAM124/",
+                        "ingest": {
+                          "period": "daylight",
+                          "intr": 60,
+                          "hourlyStart": true,
+                          "daylightStartOffset": 30,
+                          "daylightEndOffset": 30
+                        },
+                        "locus": "aws"
+                      }
+                    ]
+                  },
+                  "returnFieldsSpecified": {
+                    "summary": "Lookup specific fields for cameras. (e.g., returnFields=camName,newestImageDT)",
+                    "value": [
+                      {
+                        "camName": "Little River South Bank",
+                        "newestImageDT": "2026-01-01T00:00:00.000Z",
+                        "camId": "CAM123"
+                      },
+                      {
+                        "camName": "Little River North Bank",
+                        "newestImageDT": "2026-01-01T00:00:00.000Z",
+                        "camId": "CAM124"
+                      },
+                      {
+                        "camName": "Great River",
+                        "newestImageDT": "2025-12-31:00:00.000Z",
+                        "camId": "CAM125"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }, 
+          "400": {
+            "description": "Bad Request - Invalid parameter format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "invalidCamId": {
+                    "summary": "Invalid 'camId' parameter",
+                    "value": {"message":"Invalid camId format."}
+                  },
+                  "invalidSiteId": {
+                    "summary": "Invalid 'siteId' parameter",
+                    "value": {"message":"Invalid siteId format. Expected NWIS ID (e.g., 12345678).."}
+                  }
+                } 
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden403"
+          },
+          "404": {
+            "description": "Not Found - A camera with the specified `camId` was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "nonExistentCamId": {
+                    "summary": "Non-existent 'camId' parameter",
+                    "value": {"message":"Camera with camId 'WI_NOT_A_CAMERA' not found."}
+                  },
+                  "nonExistentSiteId": {
+                    "summary": "Non-existent 'siteId' parameter",
+                    "value": {"message":"No camera(s) found for siteId: '01234567'"}
+                  }
+                } 
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests429"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError500"
+          }
+        }
+      }
+    },
+    "/listFiles": {
+      "get": {
+        "tags": ["Images"],
+        "summary": "List image filenames for a given camera",
+        "description": "Returns a list of image filenames (or raw items if requested) for the specified camera, with optional limits and date windowing.\n\nHow to use the filenames: The strings returned by this endpoint are filenames, not full URLs. To build a usable image URL, combine the filename with one of the camera’s base path fields from `/cameras`:\n- Full-size image: `overlayDir + filename`\n- Thumbnail (H≈200px): `thumbDir + filename`\n- Small image (W≈720px): `smallDir + filename`\n- Timelapse video: `tlDir + camId + '_720.mp4'`\n\nExample:\n- `/cameras?camId=CAM123` → `overlayDir = https://usgs-nims-images.s3.amazonaws.com/overlay/CAM123/`\n- `/listFiles?camId=CAM123` → `[\"CAM123___2026-01-01T00-00-10Z.jpg\"]`\n- Full URL: `https://usgs-nims-images.s3.amazonaws.com/overlay/CAM123/CAM123___2026-01-01T00-00-10Z.jpg`",
+        "parameters": [
+          {
+            "name": "camId",
+            "in": "query",
+            "description": "Camera ID (required).",
+            "required": true,
+            "example": "WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of items to return (default: 1000). Must be a valid integer.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50000,
+              "default": 1000
+            }
+          },
+          {
+            "name": "recent",
+            "in": "query",
+            "description": "Return the most recent files instead of the oldest (default: true). Only the literal string 'false' switches to oldest-first.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "Return only items on or after this date (ISO 8601 or NIMS-standard date string).",
+            "required": false,
+            "examples": {
+              "iso8601": {
+                "summary": "ISO 8601 string",
+                "value": "2025-12-31T00:00:00.000"
+              },
+              "nimsDateString": {
+                "summary": "NIMS-standard date string",
+                "value": "2025-12-31T00-00-00Z"
+              }
+            },
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "description": "Return only items on or before this date (ISO 8601 or NIMS-standard date string).",
+            "required": false,
+            "examples": {
+              "iso8601": {
+                "summary": "ISO 8601 string",
+                "value": "2026-01-01T00:00:00.000"
+              },
+              "nimsDateString": {
+                "summary": "NIMS-standard date string",
+                "value": "2026-01-01T00-00-00Z"
+              }
+            },
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rawItem",
+            "in": "query",
+            "description": "If true, return raw items instead of mapping to filenames (default: false). Only the literal string 'true' enables raw items.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response. Returns either a list of filenames or a list of raw items.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": { "type": "string", "example": "*" },
+                "description": "CORS header"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "description": "Array of filename strings when rawItem=false",
+                      "items": { "type": "string" }
+                    },
+                    {
+                      "type": "array",
+                      "description": "Array of raw items when rawItem=true",
+                      "items": { "$ref": "#/components/schemas/RawItem" }
+                    }
+                  ]
+                },
+                "examples": {
+                  "filenamesExample": {
+                    "summary": "Filenames list",
+                    "value": [
+                      "CAM123___2025-12-31T23-59-59Z.jpg",
+                      "CAM123___2026-01-01T00-00-10Z.jpg"
+                    ]
+                  },
+                  "rawItemsExample": {
+                    "summary": "Raw items list",
+                    "value": [
+                      {
+                        "camId": "CAM123",
+                        "filename": "CAM123___2025-12-31T23-59-59Z.jpg",
+                        "timestamp": "2025-12-31T23-59-59Z.jpg",
+                        "fs": "500000"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid or missing `camId` parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {"message":"Invalid or missing camId."}
+              }
+            }
+          },
+          "403": {
+            "$ref":"#/components/responses/Forbidden403"
+          },
+          "404": {
+            "description": "Not Found - A camera with the specified camId was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {"message":"Camera with camId 'WI_NOT_A_CAMERA' not found."}
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content - Invalid parameter format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "invalidLimit": {
+                    "summary": "Invalid 'limit' parameter",
+                    "value": {"message":"Invalid limit. Must be a positive integer <= 50000."}
+                  },
+                  "invalidRecent": {
+                    "summary": "Invalid 'recent' parameter",
+                    "value": {"message":"Invalid recent value. Must be 'true' or 'false'."}
+                  },
+                  "invalidAfter": {
+                    "summary": "Invalid 'after' parameter",
+                    "value": {"message":"Invalid date format in 'after'."}
+                  },
+                  "invalidBefore": {
+                    "summary": "Invalid 'before' parameter",
+                    "value": {"message":"Invalid date format in 'before'."}
+                  },
+                  "beforeEarlierThanAfter": {
+                    "summary": "Invalid 'after' and 'before' parameters",
+                    "value": {"message":"Invalid parameters: 'after' must be earlier than 'before'."}
+                  },
+                  "invalidRawItem": {
+                    "summary": "Invalid 'rawItem' parameter",
+                    "value": {"message":"Invalid rawItem value. Must be 'true' or 'false'."}
+                  }
+                } 
+              }
+            }
+          },
+          "429": {
+            "$ref":"#/components/responses/TooManyRequests429"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError500"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "Forbidden403": {
+        "description": "Forbidden - API key is missing or not authorized for this resource.",
+        "content": {
+          "text/html": {
+            "schema": {
+              "type": "string"
+            },
+            "example": "<html>\n      <body>\n        <h1>API_KEY_MISSING</h1>\n        <p>No api_key was supplied. Get one at https://api.waterdata.usgs.gov/signup/</p>\n      </body>\n</html>"
+          }
+        }
+      },
+      "TooManyRequests429": {
+        "description": "Too Many Requests - Rate limit exceeded.",
+        "content": {
+          "text/html": {
+            "schema": {
+              "type": "string"
+            },
+            "example": "<html>\n      <body>\n        <h1>OVER_RATE_LIMIT</h1>\n        <p>You have exceeded your rate limit. Make sure you provided your API key from https://api.waterdata.usgs.gov/signup/, then either try again later or contact us at https://waterdata.usgs.gov/questions-comments/?referrerUrl=https://api.waterdata.usgs.gov for assistance.</p>\n      </body>\n</html>"
+          }
+        }
+      },
+      "InternalServerError500": {
+        "description": "Internal Server Error.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Internal server error"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Camera": {
+        "type": "object",
+        "description": "Represents a camera resource, including its unique identifier, descriptive name, location, and other configuration details.",
+        "properties": {
+          "camId": {
+            "type": "string",
+            "description": "Unique camera identifier used for programatic reference of camera.",
+            "example": "CAM123"
+          },
+          "nwisId": {
+            "type": "string",
+            "description": "NWIS Id where camera is installed. (optional field as not all cameras installed at official gaging site)",
+            "example": "01234567"
+          },
+          "camName": {
+            "type": "string",
+            "description": "Human-readable name of camera.",
+            "example": "Little River South Bank"
+          },
+          "camDesc": {
+            "type": "string",
+            "description": "Human-readable description of camera.",
+            "example": "Camera at Little River South Bank gaging station"
+          },
+          "lat": {
+            "type": "string",
+            "description": "Latitude of the camera.",
+            "example": "44.966024"
+          },
+          "lng": {
+            "type": "string",
+            "description": "Longitude of the camera.",
+            "example": "-87.91303"
+          },
+          "stateAbrv": {
+            "type": "string",
+            "description": "Two letter, capitalized, state abbreviation.",
+            "example": "WI"
+          },
+          "tz": {
+            "type": "string",
+            "description": "Canonical timezone name.",
+            "example": "US/Central"
+          },
+          "defaultPCode": {
+            "type": "string",
+            "description": "Default parameter code associated with camera.",
+            "example": "00065"
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "ISO Date of camera creation in NIMS.",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "modifiedDate": {
+            "type": "string",
+            "description": "ISO Date of last camera modification.",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "newestImageDT": {
+            "type": "string",
+            "description": "ISO Date of last successful image ingestion.",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "TL_enabled": {
+            "type": "boolean",
+            "description": "Whether or not camera's images turned into timelapse video.",
+            "example": true
+          },
+          "TL_lastGeneratedDT": {
+            "type": "string",
+            "description": "ISO Date of the last time a timelapse video was successfully generated.",
+            "example": "2026-01-01T01:00:00.000Z"
+          },
+          "TL_lastImageUsedDT": {
+            "type": "string",
+            "description": "ISO Date of the most-recent image that was used to create the timelapse video referenced with the `TL_lastGeneratedTime`.",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "hideCam": {
+            "type": "boolean",
+            "description": "Whether or not camera should be visible on webpages.",
+            "example": false
+          },
+          "overlayDir": {
+            "type": "string",
+            "description": "Base path for full-sized images from this camera. Obtain filenames via `/listFiles` and concatenate: full image URL = `overlayDir + filename`.",
+            "example": "https://usgs-nims-images.s3.amazonaws.com/overlay/CAM123/"
+          },
+          "thumbDir": {
+            "type": "string",
+            "description": "Base path for thumbnail-sized (H≈200px) images. Obtain filenames via `/listFiles` and concatenate: thumbnail URL = `thumbDir + filename`.",
+            "example": "https://usgs-nims-images.s3.amazonaws.com/thumbnail/CAM123/"
+          },
+          "smallDir": {
+            "type": "string",
+            "description": "Base path for small-sized (W≈720px) images. Obtain filenames via `/listFiles` and concatenate: small image URL = `smallDir + filename`.",
+            "example": "https://usgs-nims-images.s3.amazonaws.com/720/CAM123/"
+          },
+          "tlDir": {
+            "type": "string",
+            "description": "Base path for timelapse videos. Timelapse URL = `tlDir + camId + '_720.mp4'`. (Use `/cameras` to read `tlDir` and `camId`; timelapse filenames are not listed by `/listFiles`.)",
+            "example": "https://usgs-nims-images.s3.amazonaws.com/timelapse/CAM123/"
+          },
+          "ingest": {
+            "type": "object",
+            "description": "Fields controlling image ingestion for camera.",
+            "properties": {
+              "period": {
+                "type": "string",
+                "description": "Period of ingest collection allowed. \"247\" is all day, \"daylight\" is astronomical dusk to dawn at given lat/long, \"start-end\" provides a UTC time-of-day start and end time for collection.",
+                "enum": [
+                  "247",
+                  "daylight",
+                  "start-end"
+                ],
+            "example": "247"
+              },
+              "intr": {
+                "type": "integer",
+                "description": "Ingestion interval in minutes, starting at the zeroth minute of each hour.",
+            "example": 60
+              },
+              "hourlyStart": {
+                "type": "boolean",
+                "description": "A false value will calculate the interval from the start time of the collection period.",
+            "example": true
+              },
+              "specificArr": {
+                "type": "array",
+                "description": "Specific UTC times-of-day (HH:MM strings) to collect an image. These collections are in addition to the normal collection period (if exists).",
+                "items": {
+                  "type": "string",
+                  "description": "HH:MM string representing the UTC time-of-day to collect.",
+                  "example": "12:06"
+                },
+                "example": [
+                  "12:06",
+                  "14:06"
+                ]
+              },
+              "periodStart": {
+                "type": "string",
+                "description": "HH:MM string representing the UTC time in which the collection period should start. (Only used when `ingest.period` is set to \"start-end\".)",
+                "example": "05:00"
+              },
+              "periodEnd": {
+                "type": "string",
+                "description": "HH:MM string representing the UTC time in which the collection period should end. (Only used when `ingest.period` is set to \"start-end\".)",
+                "example": "21:00"
+              },
+              "daylightStartOffset": {
+                "type": "integer",
+                "description": "Number of minutes before dawn collection occurs; Positive number: start before dawn, Negative number: start after dawn. (Only used when `ingest.period` is set to \"daylight\".)",
+                "example": 30
+              },
+              "daylightEndOffset": {
+                "type": "integer",
+                "description": "Number of minutes after dusk collection occurs; Positive number: end after dusk, Negative number: end before dusk. (Only used when `ingest.period` is set to \"daylight\".)",
+                "example": 30
+              }
+            }
+          },
+          "locus": {
+            "type": "string",
+            "description": "Legacy field that was used to differentiate modern and legacy systems; always returns `aws` now.", 
+            "example": "aws"
+          }
+        },
+        "required": ["camId"],
+        "additionalProperties": true
+      },
+      "RawItem": {
+        "type": "object",
+        "description": "Represents an image record with metadata fields such as camera ID, capture timestamp, file size in bytes, and standardized filename.",
+        "properties": {
+          "camId": {
+            "type": "string",
+            "description": "Unique camera identifier used for programatic reference of camera.",
+            "example": "CAM123"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Image filename.",
+            "example": "CAM123___2025-12-31T23-59-59Z.jpg"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Image timestamp as NIMS-standard date string.",
+            "example": "2025-12-31T23-59-59Z"
+          },
+          "fs": {
+            "type": "integer",
+            "description": "Image file size in kb.",
+            "example": "770000"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error shape returned by handlers.",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        },
+        "required": [ "message"],
+        "additionalProperties": false
+      }
+    }
+  }
+}

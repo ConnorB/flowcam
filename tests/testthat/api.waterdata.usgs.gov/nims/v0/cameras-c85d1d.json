@@ -1,0 +1,19 @@
+[
+  {
+    "camId": "CAM125",
+    "nwisId": "12345678",
+    "camName": "Great River",
+    "lat": "40.714886",
+    "lng": "-73.157632",
+    "stateAbrv": "NY",
+    "tz": "US/Eastern",
+    "defaultPCode": "00060",
+    "TL_enabled": false,
+    "overlayDir": "https://usgs-nims-images.s3.amazonaws.com/overlay/CAM125/",
+    "thumbDir": "https://usgs-nims-images.s3.amazonaws.com/thumbnail/CAM125/",
+    "smallDir": "https://usgs-nims-images.s3.amazonaws.com/720/CAM125/",
+    "tlDir": "https://usgs-nims-images.s3.amazonaws.com/timelapse/CAM125/",
+    "ingest": {"period": "start-end", "intr": 60, "periodStart": "05:00", "periodEnd": "21:00"},
+    "locus": "aws"
+  }
+]

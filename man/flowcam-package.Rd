@@ -33,17 +33,17 @@ variable, the same variable used by \code{dataRetrieval}.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/yourorg/flowcam}
-  \item Report bugs at \url{https://github.com/yourorg/flowcam/issues}
+  \item \url{https://github.com/ConnorB/flowcam}
+  \item Report bugs at \url{https://github.com/ConnorB/flowcam/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: First Last \email{you@example.com}
+\strong{Maintainer}: Connor Brown \email{ConnorBrown1996@gmail.com}
 
 Authors:
 \itemize{
-  \item First Last \email{you@example.com}
+  \item Connor Brown \email{ConnorBrown1996@gmail.com}
 }
 
 }

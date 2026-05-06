@@ -1,14 +1,14 @@
-# Assemble camera images into an animated GIF
+# Assemble camera images into an MP4 video
 
-Downloads images for a camera over a specified time range and assembles
-them into an animated GIF using the `gifski` package. Provide either
-`cam_id` or `site_id` to identify the camera, and use `time` to restrict
-the range.
+Downloads images for a camera over a specified time range and encodes
+them into an MP4 video using the `av` package. Provide either `cam_id`
+or `site_id` to identify the camera, and use `time` to restrict the
+range.
 
 ## Usage
 
 ``` r
-make_gif(
+make_video(
   cam_id = NULL,
   site_id = NULL,
   time = NULL,
@@ -41,8 +41,8 @@ make_gif(
 
 - output:
 
-  Character. File path for the output GIF. Defaults to `"<cam_id>.gif"`
-  (or `"<site_id>.gif"`, or the directory basename) in the working
+  Character. File path for the output MP4. Defaults to `"<cam_id>.mp4"`
+  (or `"<site_id>.mp4"`, or the directory basename) in the working
   directory.
 
 - fps:
@@ -90,23 +90,19 @@ prefix) and `time` to filter by timestamp embedded in the filename —
 useful when a directory contains images from multiple cameras or a wider
 date range than needed.
 
-JPEG frames are converted to PNG in a temporary directory before
-encoding because `gifski` only accepts PNG input. The `jpeg` and `png`
-packages are required when any frames are JPEG.
-
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
 # Download and assemble images for a date range
-make_gif("WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
-         time = c("2025-06-01", "2025-06-02"), output = "chippewa.gif")
+make_video("WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
+           time = c("2025-06-01", "2025-06-02"), output = "chippewa.mp4")
 
 # One frame per day from a local directory
-make_gif(cam_id = "NM_Pecos_Web_Camera_near_Roswell",
-         time        = c("2023-08-01", "2023-08-31"),
-         dir         = "~/Downloads/Pecos",
-         one_per_day = TRUE,
-         output      = "pecos_august.gif")
+make_video(cam_id = "NM_Pecos_Web_Camera_near_Roswell",
+           time        = c("2023-08-01", "2023-08-31"),
+           dir         = "~/Downloads/Pecos",
+           one_per_day = TRUE,
+           output      = "pecos_august.mp4")
 } # }
 ```

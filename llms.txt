@@ -18,6 +18,8 @@
   : List image filenames for a NIMS camera
 - [`make_gif()`](https://connorb.github.io/flowcam/reference/make_gif.md)
   : Assemble camera images into an animated GIF
+- [`make_video()`](https://connorb.github.io/flowcam/reference/make_video.md)
+  : Assemble camera images into an MP4 video
 - [`set_nims_key()`](https://connorb.github.io/flowcam/reference/set_nims_key.md)
   : Store your USGS API key in .Renviron
 

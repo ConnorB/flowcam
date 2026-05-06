@@ -59,7 +59,7 @@
 
 <p><strong>flowcam</strong> provides a tidy interface to the USGS <a href="https://api.waterdata.usgs.gov/nims/v0" class="external-link">National Imagery Management System (NIMS)</a>, the API that stores and serves images collected by stream-gage cameras across the United States. Discover cameras, list and download images, and assemble them into animated GIFs or MP4 videos — all from R.</p>
 <div class="float">
-<img src="reference/figures/roswell.gif" alt="Pecos Web Camera near Roswell, NM — 30 days at one frame per day"><div class="figcaption">Pecos Web Camera near Roswell, NM — 30 days at one frame per day</div>
+<img src="reference/figures/kaw.gif" alt="Kansas River at Wamego, KS — 30 days at one frame per day"><div class="figcaption">Kansas River at Wamego, KS — 30 days at one frame per day</div>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -77,28 +77,30 @@
 <span><span class="co"># Store your free USGS API key (one-time setup)</span></span>
 <span><span class="fu"><a href="reference/set_nims_key.html">set_nims_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Find the camera at a USGS monitoring location</span></span>
-<span><span class="va">cam</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/find_cameras.html">find_cameras</a></span><span class="op">(</span>site_id <span class="op">=</span> <span class="st">"08385630"</span><span class="op">)</span></span>
+<span><span class="co"># Find the camera at the Kansas River at Wamego, KS</span></span>
+<span><span class="va">cam</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/find_cameras.html">find_cameras</a></span><span class="op">(</span>site_id <span class="op">=</span> <span class="st">"06887500"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># List the 20 most recent images with timestamps</span></span>
 <span><span class="fu"><a href="reference/list_images.html">list_images</a></span><span class="op">(</span><span class="va">cam</span><span class="op">$</span><span class="va">camId</span>, limit <span class="op">=</span> <span class="fl">20</span>, raw_item <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Download a three-day window to disk</span></span>
-<span><span class="va">dest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"pecos"</span><span class="op">)</span></span>
+<span><span class="co"># Download the last 30 days of images</span></span>
+<span><span class="va">dest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"kaw"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">dest</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">date_range</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">30</span>, <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/download_images.html">download_images</a></span><span class="op">(</span></span>
 <span>  cam_id   <span class="op">=</span> <span class="va">cam</span><span class="op">$</span><span class="va">camId</span>,</span>
 <span>  dest_dir <span class="op">=</span> <span class="va">dest</span>,</span>
 <span>  size     <span class="op">=</span> <span class="st">"small"</span>,</span>
-<span>  time     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-06-10"</span>, <span class="st">"2025-06-12"</span><span class="op">)</span></span>
+<span>  time     <span class="op">=</span> <span class="va">date_range</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Assemble into an animated GIF</span></span>
-<span><span class="fu"><a href="reference/make_gif.html">make_gif</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="va">dest</span>, fps <span class="op">=</span> <span class="fl">3</span>, output <span class="op">=</span> <span class="st">"pecos.gif"</span><span class="op">)</span></span>
+<span><span class="co"># Assemble into an animated GIF (one frame per day, 10 fps)</span></span>
+<span><span class="fu"><a href="reference/make_gif.html">make_gif</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="va">dest</span>, fps <span class="op">=</span> <span class="fl">10</span>, one_per_day <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"kaw.gif"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Or an MP4 video</span></span>
-<span><span class="fu"><a href="reference/make_video.html">make_video</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="va">dest</span>, fps <span class="op">=</span> <span class="fl">3</span>, output <span class="op">=</span> <span class="st">"pecos.mp4"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/make_video.html">make_video</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="va">dest</span>, fps <span class="op">=</span> <span class="fl">10</span>, one_per_day <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"kaw.mp4"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="core-functions">Core functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>

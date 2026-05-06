@@ -6,10 +6,10 @@ API that stores and serves images collected by stream-gage cameras
 across the United States. Discover cameras, list and download images,
 and assemble them into animated GIFs or MP4 videos — all from R.
 
-![Pecos Web Camera near Roswell, NM — 30 days at one frame per
-day](reference/figures/roswell.gif)
+![Kansas River at Wamego, KS — 30 days at one frame per
+day](reference/figures/kaw.gif)
 
-Pecos Web Camera near Roswell, NM — 30 days at one frame per day
+Kansas River at Wamego, KS — 30 days at one frame per day
 
 ## Installation
 
@@ -28,28 +28,30 @@ library(flowcam)
 # Store your free USGS API key (one-time setup)
 set_nims_key("your_api_key_here")
 
-# Find the camera at a USGS monitoring location
-cam <- find_cameras(site_id = "08385630")
+# Find the camera at the Kansas River at Wamego, KS
+cam <- find_cameras(site_id = "06887500")
 
 # List the 20 most recent images with timestamps
 list_images(cam$camId, limit = 20, raw_item = TRUE)
 
-# Download a three-day window to disk
-dest <- file.path(tempdir(), "pecos")
+# Download the last 30 days of images
+dest <- file.path(tempdir(), "kaw")
 dir.create(dest)
+
+date_range <- c(Sys.Date() - 30, Sys.Date())
 
 download_images(
   cam_id   = cam$camId,
   dest_dir = dest,
   size     = "small",
-  time     = c("2025-06-10", "2025-06-12")
+  time     = date_range
 )
 
-# Assemble into an animated GIF
-make_gif(dir = dest, fps = 3, output = "pecos.gif")
+# Assemble into an animated GIF (one frame per day, 10 fps)
+make_gif(dir = dest, fps = 10, one_per_day = TRUE, output = "kaw.gif")
 
 # Or an MP4 video
-make_video(dir = dest, fps = 3, output = "pecos.mp4")
+make_video(dir = dest, fps = 10, one_per_day = TRUE, output = "kaw.mp4")
 ```
 
 ## Core functions

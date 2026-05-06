@@ -56,7 +56,7 @@ make_video(dir = dest, fps = 10, one_per_day = TRUE, output = "kaw.mp4")
 | Function | Description |
 |---|---|
 | `find_cameras()` | Retrieve camera metadata; filter by NWIS site number or camera ID |
-| `find_gage_cameras()` | Like `find_cameras()`, plus NWIS site attributes (drainage area, HUC, state) via **dataRetrieval** |
+| `find_gage_cameras()` | Like `find_cameras()`, plus NWIS site attributes (drainage area, HUC, state) via [`dataRetrieval`](https://doi-usgs.github.io/dataRetrieval/) |
 | `list_images()` | List image filenames for a camera; filter by time window |
 | `download_images()` | Download images to a local directory; resumes safely if interrupted |
 | `make_gif()` | Assemble images into an animated GIF |
@@ -70,7 +70,7 @@ Register for a free key at <https://api.waterdata.usgs.gov/signup/>. Unauthentic
 set_nims_key("your_api_key_here")
 ```
 
-`flowcam` uses the same `API_USGS_PAT` environment variable as **dataRetrieval**, so one key covers both packages.
+`flowcam` uses the same `API_USGS_PAT` environment variable as [`dataRetrieval`](https://doi-usgs.github.io/dataRetrieval/), so one key covers both packages.
 
 ## Learn more
 

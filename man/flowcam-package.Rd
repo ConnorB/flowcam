@@ -33,18 +33,18 @@ variable, the same variable used by \code{dataRetrieval}.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/ConnorB/flowcam}
   \item \url{https://connorb.github.io/flowcam/}
+  \item \url{https://github.com/ConnorB/flowcam}
   \item Report bugs at \url{https://github.com/ConnorB/flowcam/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Connor Brown \email{ConnorBrown1996@gmail.com}
+\strong{Maintainer}: Connor Brown \email{ConnorBrown1996@gmail.com} (\href{https://orcid.org/0000-0002-9680-8930}{ORCID})
 
 Authors:
 \itemize{
-  \item Connor Brown \email{ConnorBrown1996@gmail.com}
+  \item Connor Brown \email{ConnorBrown1996@gmail.com} (\href{https://orcid.org/0000-0002-9680-8930}{ORCID})
 }
 
 }

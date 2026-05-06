@@ -3,16 +3,18 @@ Type: Package
 Title: Access USGS Stream Gage Camera Images via the NIMS API
 Version: 0.1.0
 Authors@R: person("Connor", "Brown", role = c("aut", "cre"),
-    email = "ConnorBrown1996@gmail.com")
+    email = "ConnorBrown1996@gmail.com",
+	comment = c(ORCID = "0000-0002-9680-8930"))
 Description: Provides functions to query camera metadata, list image filenames,
     build image URLs, download images, and assemble animated GIFs from the U.S.
     Geological Survey National Imagery Management System (NIMS) API
     <https://api.waterdata.usgs.gov/nims/v0>. Integrates with the
-    'dataRetrieval' package to enrich camera records with NWIS site metadata.
-    Authentication via the API_USGS_PAT environment variable follows the same
-    convention used by 'dataRetrieval'.
-License: AGPL (>= 3) + file LICENSE
-URL: https://github.com/ConnorB/flowcam, https://connorb.github.io/flowcam/
+    'dataRetrieval' package <https://doi-usgs.github.io/dataRetrieval/> to
+    enrich camera records with NWIS site metadata. Authentication via the
+    API_USGS_PAT environment variable follows the same convention used by
+    'dataRetrieval'.
+License: AGPL (>= 3)
+URL: https://connorb.github.io/flowcam/, https://github.com/ConnorB/flowcam
 BugReports: https://github.com/ConnorB/flowcam/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

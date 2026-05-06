@@ -1,39 +1,50 @@
 # Getting started with flowcam
 
-**flowcam** provides a tidy interface to the USGS [National Imagery
-Management System (NIMS)](https://api.waterdata.usgs.gov/nims/v0) API,
-which serves stream-gage camera images collected across the United
-States.
+**flowcam** gives you a tidy interface to the USGS [National Imagery
+Management System (NIMS)](https://api.waterdata.usgs.gov/nims/v0)
+API—the service that stores and serves images collected by stream-gage
+cameras across the United States. With a few function calls you can
+discover cameras, list available images, download them to disk, and
+stitch them into an animated GIF or MP4 video.
 
-## Authentication
-
-NIMS requests can be made without an API key, but unauthenticated calls
-are rate-limited. Register for a free key at
-<https://api.waterdata.usgs.gov/signup/> and store it with
-[`set_nims_key()`](https://connorb.github.io/flowcam/reference/set_nims_key.md):
+Full function reference: <https://connorb.github.io/flowcam/reference/>
 
 ``` r
 
 library(flowcam)
+```
+
+## Authentication
+
+NIMS requests work without a key, but unauthenticated traffic shares a
+rate-limit pool across all users. Register for a free key at
+<https://api.waterdata.usgs.gov/signup/> and store it once with
+[`set_nims_key()`](https://connorb.github.io/flowcam/reference/set_nims_key.md):
+
+``` r
 
 set_nims_key("your_api_key_here")
 ```
 
-[`set_nims_key()`](https://connorb.github.io/flowcam/reference/set_nims_key.md)
-writes `API_USGS_PAT` to `~/.Renviron` and applies it to the current
-session immediately. All subsequent API calls in the session—and in
-future R sessions—use that key automatically. The same environment
-variable is read by the `dataRetrieval` package, so one key covers both.
+This writes `API_USGS_PAT` to `~/.Renviron` and applies it to the
+current session immediately. Every subsequent call—in this session and
+in future R sessions—picks up the key automatically. The `dataRetrieval`
+package reads the same environment variable, so one key covers both.
 
-## Discovering cameras
+## Finding cameras
 
 [`find_cameras()`](https://connorb.github.io/flowcam/reference/find_cameras.md)
-returns a tibble of camera metadata. With no arguments it fetches all
-available cameras; pass `site_id` to narrow results to a specific NWIS
-site.
+returns a tibble of camera metadata. Called with no arguments it fetches
+every camera currently registered in NIMS:
 
-The Pecos Web Camera near Roswell, NM (NWIS site 08385630) is a
-well-known site on the Pecos River:
+``` r
+
+all_cameras <- find_cameras()
+nrow(all_cameras)
+```
+
+Narrow to a specific USGS monitoring location by passing its NWIS site
+number:
 
 ``` r
 
@@ -41,7 +52,15 @@ cam <- find_cameras(site_id = "08385630")
 cam
 ```
 
-Key columns returned:
+This returns the Pecos Web Camera near Roswell, NM. The same record is
+reachable by its camera identifier:
+
+``` r
+
+find_cameras(cam_id = "NM_Pecos_Web_Camera_near_Roswell")
+```
+
+Key columns in the result:
 
 | Column | Description |
 |----|----|
@@ -52,127 +71,228 @@ Key columns returned:
 | `TL_enabled` | Whether daily timelapse videos are generated |
 | `smallDir`, `overlayDir`, `thumbDir` | S3 base directories for each image size |
 
-If you already know a camera ID, look it up directly:
-
-``` r
-
-find_cameras(cam_id = cam$camId[[1]])
-```
-
-To limit network traffic when you only need a few fields, use
-`return_fields`:
+When you only need a couple of fields—for example when scanning hundreds
+of cameras—use `return_fields` to keep the response small:
 
 ``` r
 
 find_cameras(
   site_id       = "08385630",
-  return_fields = c("camName", "newestImageDT", "smallDir")
+  return_fields = c("camName", "newestImageDT", "TL_enabled")
 )
 ```
+
+`camId` is always returned regardless of what you pass to
+`return_fields`.
 
 ## Listing available images
 
 [`list_images()`](https://connorb.github.io/flowcam/reference/list_images.md)
-returns the filenames stored for a camera. Filenames alone are enough to
-build download URLs via
-[`build_image_url()`](https://connorb.github.io/flowcam/reference/build_image_url.md).
+returns the filenames stored for a camera. Pass either `cam_id` or
+`site_id`:
 
 ``` r
 
-cam_id <- cam$camId[[1]]
-
-# 10 most recent images
-imgs <- list_images(cam_id, limit = 10)
+imgs <- list_images("NM_Pecos_Web_Camera_near_Roswell", limit = 10)
 imgs
 ```
 
-By default the result is a single-column tibble of filenames. Set
-`raw_item = TRUE` to also retrieve timestamps and file sizes:
+The default is a single-column tibble of filenames ordered newest-first.
+Set `raw_item = TRUE` to also retrieve the capture timestamp and file
+size:
 
 ``` r
 
-list_images(cam_id, limit = 10, raw_item = TRUE)
+list_images("NM_Pecos_Web_Camera_near_Roswell", limit = 10, raw_item = TRUE)
 ```
 
-### Filtering by date and time
+### Filtering by time
 
-Pass POSIXct values (in UTC) to `after` and `before` to fetch images
-from a specific window:
+The `time` argument accepts a Date, POSIXct, or ISO 8601 character
+value. A single value means “on or after”:
 
 ``` r
 
 list_images(
-  cam_id,
-  after  = as.POSIXct("2025-06-01 00:00:00", tz = "UTC"),
-  before = as.POSIXct("2025-06-02 00:00:00", tz = "UTC")
+  "NM_Pecos_Web_Camera_near_Roswell",
+  time = "2025-06-15"
 )
 ```
 
-## Building image URLs
-
-[`build_image_url()`](https://connorb.github.io/flowcam/reference/build_image_url.md)
-combines the camera’s base S3 directory with the filenames returned by
-[`list_images()`](https://connorb.github.io/flowcam/reference/list_images.md):
+A two-element vector sets a closed window. Use `NA` for an open bound:
 
 ``` r
 
-urls <- build_image_url(cam, imgs$filename, size = "small")
-head(urls)
+list_images(
+  "NM_Pecos_Web_Camera_near_Roswell",
+  time = c("2025-06-01", "2025-06-03")
+)
 ```
 
-The `size` argument controls image dimensions:
+### Chronological order
 
-- `"small"` (default) — ~720 px wide, suitable for monitoring dashboards
-- `"overlay"` — full-size overlay image with gage-reading annotation
-- `"thumb"` — thumbnail ~200 px tall
+By default results are newest-first. Pass `recent = FALSE` to flip the
+order—useful when you want frames in chronological order before building
+an animation:
+
+``` r
+
+list_images("NM_Pecos_Web_Camera_near_Roswell", limit = 20, recent = FALSE)
+```
+
+### Pagination
+
+The `limit` argument controls the API page size (1–50,000). When the
+camera has more images than `limit`,
+[`list_images()`](https://connorb.github.io/flowcam/reference/list_images.md)
+paginates automatically using a timestamp cursor and returns all
+matching records in a single tibble.
 
 ## Downloading images
 
 [`download_images()`](https://connorb.github.io/flowcam/reference/download_images.md)
-wraps the steps above into a single call: it finds the camera, lists
-images, builds URLs, and saves the files to a local directory.
+lists the images for a camera and saves them to a local directory in one
+call. You must create the destination directory beforehand:
 
 ``` r
 
-dest <- tempdir()
+dest <- file.path(tempdir(), "roswell")
+dir.create(dest, showWarnings = FALSE)
 
 paths <- download_images(
-  cam_id   = cam_id,
+  cam_id   = "NM_Pecos_Web_Camera_near_Roswell",
   dest_dir = dest,
   size     = "small",
-  limit    = 5
+  limit    = 10
 )
-
-paths
 ```
 
-Already-downloaded files are skipped by default (`overwrite = FALSE`),
-making it easy to resume a partially completed download. Pass
-`overwrite = TRUE` to force re-download.
+`paths` is a character vector of local file paths returned invisibly.
+Failed downloads are represented as `NA`.
 
-## Timelapse videos
+### Image sizes
 
-Many USGS cameras produce a daily timelapse MP4 stitched from images
-collected throughout the day.
-[`get_timelapse_url()`](https://connorb.github.io/flowcam/reference/get_timelapse_url.md)
-returns the URL to that file:
+| `size`              | Approximate dimensions | Best for                        |
+|---------------------|------------------------|---------------------------------|
+| `"small"` (default) | ~720 px wide           | Monitoring, animation           |
+| `"overlay"`         | Full resolution        | Gage-reading annotation visible |
+| `"thumb"`           | ~200 px tall           | Quick visual overview           |
+
+### Time filtering
+
+Pass the same `time` argument as
+[`list_images()`](https://connorb.github.io/flowcam/reference/list_images.md)
+to restrict which images are downloaded:
 
 ``` r
 
-url <- get_timelapse_url(cam_id)
-url
+paths <- download_images(
+  cam_id   = "NM_Pecos_Web_Camera_near_Roswell",
+  dest_dir = dest,
+  size     = "small",
+  time     = c("2025-06-10", "2025-06-12")
+)
 ```
 
-You can open the URL directly in a browser or pass it to a video tool. A
-warning is emitted when `TL_enabled` is `FALSE` for the camera.
+### Resuming partial downloads
+
+[`download_images()`](https://connorb.github.io/flowcam/reference/download_images.md)
+skips files that already exist in `dest_dir` when `overwrite = FALSE`
+(the default). If a download is interrupted, simply re-run the same call
+and only the missing files will be fetched.
+
+## Making a GIF
+
+[`make_gif()`](https://connorb.github.io/flowcam/reference/make_gif.md)
+fetches images and encodes them into an animated GIF. It requires the
+`gifski` package.
+
+The simplest call streams images directly from NIMS—no separate download
+step needed:
+
+``` r
+
+make_gif(
+  cam_id = "NM_Pecos_Web_Camera_near_Roswell",
+  time   = c("2025-06-10", "2025-06-12"),
+  fps    = 2,
+  output = "roswell.gif"
+)
+```
+
+If you already downloaded images with
+[`download_images()`](https://connorb.github.io/flowcam/reference/download_images.md),
+point to that directory with `dir` to skip re-downloading:
+
+``` r
+
+make_gif(
+  dir    = dest,
+  fps    = 2,
+  output = "roswell.gif"
+)
+```
+
+### One frame per day
+
+For a range spanning many days the result can be hundreds of frames.
+Pass `one_per_day = TRUE` to reduce the animation to a single frame per
+calendar day, selecting the image whose capture time is closest to local
+noon:
+
+``` r
+
+make_gif(
+  cam_id      = "NM_Pecos_Web_Camera_near_Roswell",
+  time        = c("2025-05-01", "2025-06-30"),
+  fps         = 4,
+  one_per_day = TRUE,
+  output      = "roswell_monthly.gif"
+)
+```
+
+When `output` is not specified the file is written to `"<cam_id>.gif"`
+in the working directory.
+
+## Making a video
+
+[`make_video()`](https://connorb.github.io/flowcam/reference/make_video.md)
+produces an MP4 instead of a GIF. It requires the `av` package and
+accepts the same arguments as
+[`make_gif()`](https://connorb.github.io/flowcam/reference/make_gif.md):
+
+``` r
+
+make_video(
+  cam_id = "NM_Pecos_Web_Camera_near_Roswell",
+  time   = c("2025-06-10", "2025-06-12"),
+  fps    = 4,
+  output = "roswell.mp4"
+)
+```
+
+Build from an already-downloaded directory:
+
+``` r
+
+make_video(
+  dir    = dest,
+  fps    = 4,
+  output = "roswell.mp4"
+)
+```
+
+MP4 files are substantially smaller than equivalent GIFs at the same
+resolution and frame count, making them preferable for longer time
+ranges or larger image sizes. GIFs are more portable for sharing in
+contexts that don’t support video embedding.
 
 ## Next steps
 
-- See
-  [`vignette("pecos-river")`](https://connorb.github.io/flowcam/articles/pecos-river.md)
-  for a full monitoring workflow combining **flowcam** with streamflow
-  data from **dataRetrieval**.
-- Use
+- [`vignette("pecos-river")`](https://connorb.github.io/flowcam/articles/pecos-river.md)
+  shows how to use
   [`find_gage_cameras()`](https://connorb.github.io/flowcam/reference/find_gage_cameras.md)
-  to retrieve camera metadata enriched with NWIS site attributes
-  (drainage area, elevation, hydrologic unit, etc.).
+  to enrich camera records with NWIS site metadata and compare two
+  cameras on the same river reach.
+- The full function reference is at
+  <https://connorb.github.io/flowcam/reference/>.

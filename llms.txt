@@ -1,5 +1,94 @@
 # flowcam
 
+**flowcam** provides a tidy interface to the USGS [National Imagery
+Management System (NIMS)](https://api.waterdata.usgs.gov/nims/v0), the
+API that stores and serves images collected by stream-gage cameras
+across the United States. Discover cameras, list and download images,
+and assemble them into animated GIFs or MP4 videos — all from R.
+
+## Installation
+
+``` r
+
+# install.packages("pak")
+pak::pak("ConnorB/flowcam")
+```
+
+## Quick start
+
+``` r
+
+library(flowcam)
+
+# Store your free USGS API key (one-time setup)
+set_nims_key("your_api_key_here")
+
+# Find the camera at a USGS monitoring location
+cam <- find_cameras(site_id = "08385630")
+
+# List the 20 most recent images with timestamps
+list_images(cam$camId, limit = 20, raw_item = TRUE)
+
+# Download a three-day window to disk
+dest <- file.path(tempdir(), "pecos")
+dir.create(dest)
+
+download_images(
+  cam_id   = cam$camId,
+  dest_dir = dest,
+  size     = "small",
+  time     = c("2025-06-10", "2025-06-12")
+)
+
+# Assemble into an animated GIF
+make_gif(dir = dest, fps = 3, output = "pecos.gif")
+
+# Or an MP4 video
+make_video(dir = dest, fps = 3, output = "pecos.mp4")
+```
+
+## Core functions
+
+| Function | Description |
+|----|----|
+| [`find_cameras()`](https://connorb.github.io/flowcam/reference/find_cameras.md) | Retrieve camera metadata; filter by NWIS site number or camera ID |
+| [`find_gage_cameras()`](https://connorb.github.io/flowcam/reference/find_gage_cameras.md) | Like [`find_cameras()`](https://connorb.github.io/flowcam/reference/find_cameras.md), plus NWIS site attributes (drainage area, HUC, state) via **dataRetrieval** |
+| [`list_images()`](https://connorb.github.io/flowcam/reference/list_images.md) | List image filenames for a camera; filter by time window |
+| [`download_images()`](https://connorb.github.io/flowcam/reference/download_images.md) | Download images to a local directory; resumes safely if interrupted |
+| [`make_gif()`](https://connorb.github.io/flowcam/reference/make_gif.md) | Assemble images into an animated GIF |
+| [`make_video()`](https://connorb.github.io/flowcam/reference/make_video.md) | Assemble images into an MP4 video |
+
+## Authentication
+
+Register for a free key at <https://api.waterdata.usgs.gov/signup/>.
+Unauthenticated requests work but share a rate-limit pool. Store the key
+once and it persists across sessions:
+
+``` r
+
+set_nims_key("your_api_key_here")
+```
+
+`flowcam` uses the same `API_USGS_PAT` environment variable as
+**dataRetrieval**, so one key covers both packages.
+
+## Learn more
+
+- [Getting
+  started](https://connorb.github.io/flowcam/articles/getting-started.md)
+  — authentication, discovering cameras, listing images, downloading,
+  and creating GIFs and videos in one walkthrough.
+- [Comparing two Pecos River
+  gages](https://connorb.github.io/flowcam/articles/pecos-river.md) —
+  use
+  [`find_gage_cameras()`](https://connorb.github.io/flowcam/reference/find_gage_cameras.md)
+  to enrich camera records with watershed metadata, download images from
+  two sites on the same river reach, and produce a GIF and video to
+  track a flow event moving downstream.
+- [Function
+  reference](https://connorb.github.io/flowcam/reference/index.md) —
+  complete documentation for all exported functions.
+
 # Package index
 
 ## All functions
@@ -25,9 +114,9 @@
 
 # Articles
 
-### All vignettes
+### Vignettes
 
 - [Getting started with
   flowcam](https://connorb.github.io/flowcam/articles/getting-started.md):
-- [Monitoring the Pecos River with flowcam and
-  dataRetrieval](https://connorb.github.io/flowcam/articles/pecos-river.md):
+- [Comparing two Pecos River gages with
+  flowcam](https://connorb.github.io/flowcam/articles/pecos-river.md):

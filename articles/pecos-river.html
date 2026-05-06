@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Monitoring the Pecos River with flowcam and dataRetrieval • flowcam</title>
+<title>Comparing two Pecos River gages with flowcam • flowcam</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="pecos-river_files/libs/quarto-html/popper.min.js"></script><script src="pecos-river_files/libs/quarto-html/tippy.umd.min.js"></script><link href="pecos-river_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="pecos-river_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Monitoring the Pecos River with flowcam and dataRetrieval">
+<!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Comparing two Pecos River gages with flowcam">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -31,14 +31,14 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with flowcam</a></li>
-    <li><a class="dropdown-item" href="../articles/pecos-river.html">Monitoring the Pecos River with flowcam and dataRetrieval</a></li>
+    <li><a class="dropdown-item" href="../articles/pecos-river.html">Comparing two Pecos River gages with flowcam</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -54,7 +54,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Monitoring the Pecos River with flowcam and dataRetrieval</h1>
+      <h1>Comparing two Pecos River gages with flowcam</h1>
 
 
 
@@ -68,7 +68,7 @@
 
 
 
-    <p>This vignette walks through a practical monitoring workflow using two USGS stream-gage cameras on the Pecos River in southeastern New Mexico:</p>
+    <p>The Pecos River drains the Sacramento Mountains before flowing southeast through the Roswell Basin toward the Texas state line. Two USGS stream-gage cameras sit roughly 45 km apart along this reach:</p>
 <table class="table caption-top">
 <colgroup>
 <col style="width: 33%">
@@ -78,163 +78,205 @@
 <thead><tr class="header">
 <th>Site</th>
 <th>NWIS ID</th>
-<th>Description</th>
+<th>Camera ID</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td>Pecos Web Camera near Roswell</td>
 <td>08385630</td>
-<td>Visual monitoring at the Roswell reach</td>
+<td><code>NM_Pecos_Web_Camera_near_Roswell</code></td>
 </tr>
 <tr class="even">
 <td>Pecos River near Acme</td>
 <td>08386000</td>
-<td>~45 km downstream; long-term flow record</td>
+<td><code>NM_Pecos_River_near_Acme</code></td>
 </tr>
 </tbody>
 </table>
-<p>The workflow pairs camera images from <strong>flowcam</strong> with streamflow data from <strong>dataRetrieval</strong> to put the visual record in hydrologic context.</p>
+<p>Because a flood pulse typically takes several hours to travel between the two sites, comparing the image records lets you watch a flow event propagate downstream. This vignette shows how to discover both cameras, list and download images, and produce an animated GIF and an MP4 from the two sites.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ConnorB/flowcam" class="external-link">flowcam</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">dataRetrieval</span><span class="op">)</span>  <span class="co"># install.packages("dataRetrieval") if needed</span></span></code></pre></div>
 </div>
-<section class="level2"><h2 id="site-metadata-and-camera-discovery">Site metadata and camera discovery<a class="anchor" aria-label="anchor" href="#site-metadata-and-camera-discovery"></a>
+<section class="level2"><h2 id="camera-discovery-with-gage-metadata">Camera discovery with gage metadata<a class="anchor" aria-label="anchor" href="#camera-discovery-with-gage-metadata"></a>
 </h2>
-<p><code><a href="../reference/find_gage_cameras.html">find_gage_cameras()</a></code> calls <code><a href="../reference/find_cameras.html">find_cameras()</a></code> for a site and then joins in NWIS attributes—drainage area, state, county, hydrologic unit code—in a single step:</p>
+<p><code><a href="../reference/find_gage_cameras.html">find_gage_cameras()</a></code> wraps <code><a href="../reference/find_cameras.html">find_cameras()</a></code> and joins in NWIS site attributes—drainage area, state, county, hydrologic unit code—via <code><a href="https://rdrr.io/pkg/dataRetrieval/man/read_waterdata_monitoring_location.html" class="external-link">dataRetrieval::read_waterdata_monitoring_location()</a></code>. The result has every column returned by <code><a href="../reference/find_cameras.html">find_cameras()</a></code> plus the enriched NWIS columns where available.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">roswell</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/find_gage_cameras.html">find_gage_cameras</a></span><span class="op">(</span><span class="st">"08385630"</span><span class="op">)</span></span>
 <span><span class="va">roswell</span></span></code></pre></div>
 </div>
-<p>The result includes all camera columns from <code><a href="../reference/find_cameras.html">find_cameras()</a></code> plus columns such as <code>monitoring_location_name</code>, <code>state_name</code>, <code>drain_area_va</code>, and <code>hydrologic_unit_code</code> where available.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">acme</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/find_gage_cameras.html">find_gage_cameras</a></span><span class="op">(</span><span class="st">"08386000"</span><span class="op">)</span></span>
 <span><span class="va">acme</span></span></code></pre></div>
 </div>
-</section><section class="level2"><h2 id="inspecting-camera-details">Inspecting camera details<a class="anchor" aria-label="anchor" href="#inspecting-camera-details"></a>
-</h2>
-<p>Useful fields to check before downloading:</p>
+<p>Columns added by the NWIS join include:</p>
+<table class="table caption-top">
+<thead><tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>monitoring_location_name</code></td>
+<td>Full official site name</td>
+</tr>
+<tr class="even">
+<td><code>drain_area_va</code></td>
+<td>Drainage area in square miles</td>
+</tr>
+<tr class="odd">
+<td><code>hydrologic_unit_code</code></td>
+<td>12-digit HUC</td>
+</tr>
+<tr class="even">
+<td><code>state_name</code></td>
+<td>State of the monitoring location</td>
+</tr>
+</tbody>
+</table>
+<p>Compare drainage area between the two sites—Acme is downstream so its contributing watershed is larger:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># When was the most recent image captured?</span></span>
-<span><span class="va">roswell</span><span class="op">$</span><span class="va">newestImageDT</span></span>
-<span></span>
-<span><span class="co"># Is timelapse enabled?</span></span>
-<span><span class="va">roswell</span><span class="op">$</span><span class="va">TL_enabled</span></span>
-<span></span>
-<span><span class="co"># Hydrologic context</span></span>
-<span><span class="va">roswell</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"monitoring_location_name"</span>, <span class="st">"drain_area_va"</span>,</span>
-<span>             <span class="st">"hydrologic_unit_code"</span>, <span class="st">"state_name"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
-</div>
-</section><section class="level2"><h2 id="fetching-recent-images-at-the-roswell-camera">Fetching recent images at the Roswell camera<a class="anchor" aria-label="anchor" href="#fetching-recent-images-at-the-roswell-camera"></a>
-</h2>
-<p>Retrieve the 20 most recent images with metadata so we know the timestamps:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cam_id</span> <span class="op">&lt;-</span> <span class="va">roswell</span><span class="op">$</span><span class="va">camId</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span></span>
-<span><span class="va">recent</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span><span class="va">cam_id</span>, limit <span class="op">=</span> <span class="fl">20</span>, raw_item <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">recent</span></span></code></pre></div>
-</div>
-<p><code>timestamp</code> is in the NIMS <code>YYYY-MM-DDTHH-MM-SSZ</code> format and records the image capture time in UTC. The <code>fs</code> column gives file size in kilobytes.</p>
-</section><section class="level2"><h2 id="pairing-images-with-streamflow">Pairing images with streamflow<a class="anchor" aria-label="anchor" href="#pairing-images-with-streamflow"></a>
-</h2>
-<p>Retrieve mean daily discharge (parameter code <code>00060</code>) from the downstream Acme gage (08386000) over the same period. NWIS data is easy to pull with <code><a href="https://rdrr.io/pkg/dataRetrieval/man/readNWISdv.html" class="external-link">dataRetrieval::readNWISdv()</a></code>:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Derive date range from the images we just listed</span></span>
-<span><span class="co"># timestamps are like "2025-06-15T14-30-00Z"</span></span>
-<span><span class="va">ts_clean</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"T(\\d{2})-(\\d{2})-(\\d{2})Z$"</span>, <span class="st">"T\\1:\\2:\\3Z"</span>,</span>
-<span>                  <span class="va">recent</span><span class="op">$</span><span class="va">timestamp</span><span class="op">)</span></span>
-<span><span class="va">image_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="va">ts_clean</span>, format <span class="op">=</span> <span class="st">"%Y-%m-%dT%H:%M:%SZ"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">start_date</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">image_times</span><span class="op">)</span>, <span class="st">"%Y-%m-%d"</span><span class="op">)</span></span>
-<span><span class="va">end_date</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">image_times</span><span class="op">)</span>, <span class="st">"%Y-%m-%d"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">flow</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/dataRetrieval/man/readNWISdv.html" class="external-link">readNWISdv</a></span><span class="op">(</span></span>
-<span>  siteNumbers <span class="op">=</span> <span class="st">"08386000"</span>,</span>
-<span>  parameterCd <span class="op">=</span> <span class="st">"00060"</span>,</span>
-<span>  startDate   <span class="op">=</span> <span class="va">start_date</span>,</span>
-<span>  endDate     <span class="op">=</span> <span class="va">end_date</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">flow</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/dataRetrieval/man/renameNWISColumns.html" class="external-link">renameNWISColumns</a></span><span class="op">(</span><span class="va">flow</span><span class="op">)</span></span>
-<span><span class="va">flow</span></span></code></pre></div>
-</div>
-</section><section class="level2"><h2 id="downloading-images-around-a-flow-event">Downloading images around a flow event<a class="anchor" aria-label="anchor" href="#downloading-images-around-a-flow-event"></a>
-</h2>
-<p>Suppose the Acme gage recorded a notable rise. Download images from the Roswell camera bracketing that period to see whether it was visible upstream:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">event_start</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2025-06-10 00:00:00"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span></span>
-<span><span class="va">event_end</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2025-06-12 23:59:59"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">dest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"pecos_event"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">dest</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_images.html">download_images</a></span><span class="op">(</span></span>
-<span>  cam_id   <span class="op">=</span> <span class="va">cam_id</span>,</span>
-<span>  dest_dir <span class="op">=</span> <span class="va">dest</span>,</span>
-<span>  size     <span class="op">=</span> <span class="st">"small"</span>,</span>
-<span>  after    <span class="op">=</span> <span class="va">event_start</span>,</span>
-<span>  before   <span class="op">=</span> <span class="va">event_end</span>,</span>
-<span>  limit    <span class="op">=</span> <span class="fl">50</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># How many images were captured during the event window?</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">paths</span><span class="op">)</span></span></code></pre></div>
-</div>
-<p>Re-running <code><a href="../reference/download_images.html">download_images()</a></code> after a partial download is safe: files already in <code>dest</code> are skipped unless you pass <code>overwrite = TRUE</code>.</p>
-</section><section class="level2"><h2 id="overlay-images-for-gage-reading-annotation">Overlay images for gage-reading annotation<a class="anchor" aria-label="anchor" href="#overlay-images-for-gage-reading-annotation"></a>
-</h2>
-<p>The <code>"overlay"</code> size embeds a gage-height annotation directly on the image. These are useful for field verification and training data:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Build URLs for the overlay version of the same images</span></span>
-<span><span class="va">imgs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span><span class="va">cam_id</span>,</span>
-<span>                    after  <span class="op">=</span> <span class="va">event_start</span>,</span>
-<span>                    before <span class="op">=</span> <span class="va">event_end</span>,</span>
-<span>                    limit  <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">overlay_urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_image_url.html">build_image_url</a></span><span class="op">(</span><span class="va">roswell</span>, <span class="va">imgs</span><span class="op">$</span><span class="va">filename</span>, size <span class="op">=</span> <span class="st">"overlay"</span><span class="op">)</span></span>
-<span><span class="va">overlay_urls</span></span></code></pre></div>
-</div>
-</section><section class="level2"><h2 id="daily-timelapse-for-the-roswell-camera">Daily timelapse for the Roswell camera<a class="anchor" aria-label="anchor" href="#daily-timelapse-for-the-roswell-camera"></a>
-</h2>
-<p>If timelapse is enabled, <code><a href="../reference/get_timelapse_url.html">get_timelapse_url()</a></code> returns the URL to the current day’s MP4:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tl_url</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_timelapse_url.html">get_timelapse_url</a></span><span class="op">(</span><span class="va">cam_id</span><span class="op">)</span></span>
-<span><span class="va">tl_url</span></span></code></pre></div>
-</div>
-<p>Open the URL in a browser or use <code>utils::browseURL(tl_url)</code> to view it directly.</p>
-</section><section class="level2"><h2 id="comparing-both-sites">Comparing both sites<a class="anchor" aria-label="anchor" href="#comparing-both-sites"></a>
-</h2>
-<p>The Acme gage (08386000) is ~45 km downstream of the Roswell camera (08385630). Checking both cameras on the same day makes it possible to track a flood wave moving through the reach:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># List the most recent image from each site on the same day</span></span>
-<span><span class="va">roswell_imgs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span><span class="va">roswell</span><span class="op">$</span><span class="va">camId</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, limit <span class="op">=</span> <span class="fl">1</span>, raw_item <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">acme_imgs</span>    <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span><span class="va">acme</span><span class="op">$</span><span class="va">camId</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,   limit <span class="op">=</span> <span class="fl">1</span>, raw_item <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>site <span class="op">=</span> <span class="st">"Roswell (08385630)"</span>, <span class="va">roswell_imgs</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>site <span class="op">=</span> <span class="st">"Acme (08386000)"</span>,    <span class="va">acme_imgs</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  site      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Roswell"</span>, <span class="st">"Acme"</span><span class="op">)</span>,</span>
+<span>  site_id   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"08385630"</span>, <span class="st">"08386000"</span><span class="op">)</span>,</span>
+<span>  drain_mi2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">roswell</span><span class="op">$</span><span class="va">drain_area_va</span>, <span class="va">acme</span><span class="op">$</span><span class="va">drain_area_va</span><span class="op">)</span>,</span>
+<span>  lat       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">roswell</span><span class="op">$</span><span class="va">lat</span>, <span class="va">acme</span><span class="op">$</span><span class="va">lat</span><span class="op">)</span>,</span>
+<span>  lng       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">roswell</span><span class="op">$</span><span class="va">lng</span>, <span class="va">acme</span><span class="op">$</span><span class="va">lng</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
+<p>Check image availability before downloading. <code>newestImageDT</code> (UTC) tells you when each camera last reported:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">roswell</span><span class="op">$</span><span class="va">newestImageDT</span></span>
+<span><span class="va">acme</span><span class="op">$</span><span class="va">newestImageDT</span></span></code></pre></div>
+</div>
+</section><section class="level2"><h2 id="listing-images-from-both-cameras">Listing images from both cameras<a class="anchor" aria-label="anchor" href="#listing-images-from-both-cameras"></a>
+</h2>
+<p>Use the same <code>time</code> window for both sites so the image sets are directly comparable. A two-element vector passed to <code>time</code> sets a closed interval; a single value means “on or after”:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">window</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-06-10"</span>, <span class="st">"2025-06-13"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">roswell_imgs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span></span>
+<span>  <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  time     <span class="op">=</span> <span class="va">window</span>,</span>
+<span>  raw_item <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  recent   <span class="op">=</span> <span class="cn">FALSE</span>        <span class="co"># chronological order</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">acme_imgs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span></span>
+<span>  <span class="st">"NM_Pecos_River_near_Acme"</span>,</span>
+<span>  time     <span class="op">=</span> <span class="va">window</span>,</span>
+<span>  raw_item <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  recent   <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>Bind the two results to compare counts and timestamps side by side:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>site <span class="op">=</span> <span class="st">"Roswell (08385630)"</span>, <span class="va">roswell_imgs</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>site <span class="op">=</span> <span class="st">"Acme (08386000)"</span>,    <span class="va">acme_imgs</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p><code>raw_item = TRUE</code> returns <code>camId</code>, <code>filename</code>, <code>timestamp</code>, and <code>fs</code> (file size in kilobytes). The timestamps are UTC strings in NIMS format (<code>YYYY-MM-DDTHH-MM-SSZ</code>).</p>
+</section><section class="level2"><h2 id="downloading-images-from-both-sites">Downloading images from both sites<a class="anchor" aria-label="anchor" href="#downloading-images-from-both-sites"></a>
+</h2>
+<p>Create a separate destination directory for each site so the files don’t mix:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">roswell_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"roswell"</span><span class="op">)</span></span>
+<span><span class="va">acme_dir</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"acme"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">roswell_dir</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">acme_dir</span>,    showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>Download the Roswell images first:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">roswell_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_images.html">download_images</a></span><span class="op">(</span></span>
+<span>  cam_id   <span class="op">=</span> <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  dest_dir <span class="op">=</span> <span class="va">roswell_dir</span>,</span>
+<span>  size     <span class="op">=</span> <span class="st">"small"</span>,</span>
+<span>  time     <span class="op">=</span> <span class="va">window</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>Then the Acme images:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">acme_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_images.html">download_images</a></span><span class="op">(</span></span>
+<span>  cam_id   <span class="op">=</span> <span class="st">"NM_Pecos_River_near_Acme"</span>,</span>
+<span>  dest_dir <span class="op">=</span> <span class="va">acme_dir</span>,</span>
+<span>  size     <span class="op">=</span> <span class="st">"small"</span>,</span>
+<span>  time     <span class="op">=</span> <span class="va">window</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>Both calls skip files that already exist on disk (<code>overwrite = FALSE</code> by default), so re-running after an interrupted download is safe. Switch to <code>size = "overlay"</code> if you want the full-resolution images with the gage-height annotation overlaid.</p>
+</section><section class="level2"><h2 id="gif-of-the-roswell-camera">GIF of the Roswell camera<a class="anchor" aria-label="anchor" href="#gif-of-the-roswell-camera"></a>
+</h2>
+<p>Build an animated GIF from the images already on disk by pointing <code>dir</code> at the download directory. This avoids a second round of network requests:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/make_gif.html">make_gif</a></span><span class="op">(</span></span>
+<span>  dir    <span class="op">=</span> <span class="va">roswell_dir</span>,</span>
+<span>  fps    <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"roswell_event.gif"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>For a time range spanning multiple days, <code>one_per_day = TRUE</code> reduces the animation to one frame per calendar day—the image captured closest to local noon in the camera’s time zone. This keeps the GIF from becoming unwieldy over a long monitoring period:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/make_gif.html">make_gif</a></span><span class="op">(</span></span>
+<span>  cam_id      <span class="op">=</span> <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  time        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-05-01"</span>, <span class="st">"2025-06-30"</span><span class="op">)</span>,</span>
+<span>  fps         <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  one_per_day <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  output      <span class="op">=</span> <span class="st">"roswell_seasonal.gif"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>Adjust <code>fps</code> to control playback speed: 1–2 fps gives enough time to read individual frames during a flood event; 4+ fps is better for a seasonal overview where you want to convey change over weeks.</p>
+<p><code><a href="../reference/make_gif.html">make_gif()</a></code> requires the <code>gifski</code> package (and <code>jpeg</code>/<code>png</code> for JPEG-format source images, which NIMS typically serves).</p>
+</section><section class="level2"><h2 id="video-of-the-acme-camera">Video of the Acme camera<a class="anchor" aria-label="anchor" href="#video-of-the-acme-camera"></a>
+</h2>
+<p><code><a href="../reference/make_video.html">make_video()</a></code> produces an MP4 from the same inputs. It accepts identical arguments to <code><a href="../reference/make_gif.html">make_gif()</a></code> and requires the <code>av</code> package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/make_video.html">make_video</a></span><span class="op">(</span></span>
+<span>  dir    <span class="op">=</span> <span class="va">acme_dir</span>,</span>
+<span>  fps    <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"acme_event.mp4"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>You can also stream directly from NIMS without a prior download:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/make_video.html">make_video</a></span><span class="op">(</span></span>
+<span>  cam_id <span class="op">=</span> <span class="st">"NM_Pecos_River_near_Acme"</span>,</span>
+<span>  time   <span class="op">=</span> <span class="va">window</span>,</span>
+<span>  fps    <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"acme_event.mp4"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>An MP4 at the same resolution and frame count is substantially smaller than a GIF. For a multi-day event with hundreds of frames, video is generally the better choice; GIF is more convenient for embedding in tools that don’t support video.</p>
 </section><section class="level2"><h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
 </h2>
 <ul>
 <li>
-<strong>Rate limits</strong>: unauthenticated requests share a pool across all users. Call <code><a href="../reference/set_nims_key.html">set_nims_key()</a></code> once (see <code><a href="../articles/getting-started.html">vignette("getting-started")</a></code>) to raise your personal limit.</li>
+<strong>Check <code>newestImageDT</code> first.</strong> If the timestamp is hours or days old the camera may be offline. Spot-check before committing to a large download.</li>
 <li>
-<strong>Large downloads</strong>: set <code>limit</code> conservatively while exploring; images at the <code>"small"</code> size are roughly 150–300 KB each. The <code>"thumb"</code> size is useful when you only need a visual overview.</li>
+<strong>Use <code>"thumb"</code> for exploration.</strong> Thumbnails are around 200 px tall and much smaller than <code>"small"</code> images. Download a thumb set first to verify coverage before switching to <code>"small"</code> or <code>"overlay"</code>.</li>
 <li>
-<strong>Time zones</strong>: all NIMS timestamps are UTC. The <code>tz</code> column in camera metadata records the local time zone of the installation if you need to convert.</li>
+<strong>Time zones.</strong> All NIMS timestamps are UTC. The <code>tz</code> column in the camera metadata records the camera’s local IANA time zone if you need to convert for display or <code>one_per_day</code> interpretation.</li>
 <li>
-<strong>Image availability</strong>: <code>newestImageDT</code> in the camera metadata gives the age of the most recent image—useful for detecting outages before you start a download loop.</li>
-</ul></section><script id="quarto-html-after-body" type="application/javascript">
+<strong>Large downloads.</strong> <code>"small"</code> images are roughly 150–300 KB each. A 30-day window at one image per 15 minutes is around 2,900 files (~600 MB). Plan accordingly and use <code>overwrite = FALSE</code> to resume safely.</li>
+<li>
+<strong>Rate limits.</strong> Unauthenticated requests share a pool across all users. Store an API key with <code><a href="../reference/set_nims_key.html">set_nims_key()</a></code> (see <code><a href="../articles/getting-started.html">vignette("getting-started")</a></code>) to use your personal allocation.</li>
+</ul>
+<p>Full function reference: <a href="https://connorb.github.io/flowcam/reference/" class="uri">https://connorb.github.io/flowcam/reference/</a></p>
+</section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);

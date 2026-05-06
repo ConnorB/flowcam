@@ -31,14 +31,14 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/getting-started.html">Getting started with flowcam</a></li>
-    <li><a class="dropdown-item" href="articles/pecos-river.html">Monitoring the Pecos River with flowcam and dataRetrieval</a></li>
+    <li><a class="dropdown-item" href="articles/pecos-river.html">Comparing two Pecos River gages with flowcam</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -55,6 +55,107 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="flowcam">flowcam<a class="anchor" aria-label="anchor" href="#flowcam"></a>
 </h1></div>
+<p><strong>flowcam</strong> provides a tidy interface to the USGS <a href="https://api.waterdata.usgs.gov/nims/v0" class="external-link">National Imagery Management System (NIMS)</a>, the API that stores and serves images collected by stream-gage cameras across the United States. Discover cameras, list and download images, and assemble them into animated GIFs or MP4 videos — all from R.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"ConnorB/flowcam"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ConnorB/flowcam" class="external-link">flowcam</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Store your free USGS API key (one-time setup)</span></span>
+<span><span class="fu"><a href="reference/set_nims_key.html">set_nims_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Find the camera at a USGS monitoring location</span></span>
+<span><span class="va">cam</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/find_cameras.html">find_cameras</a></span><span class="op">(</span>site_id <span class="op">=</span> <span class="st">"08385630"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># List the 20 most recent images with timestamps</span></span>
+<span><span class="fu"><a href="reference/list_images.html">list_images</a></span><span class="op">(</span><span class="va">cam</span><span class="op">$</span><span class="va">camId</span>, limit <span class="op">=</span> <span class="fl">20</span>, raw_item <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Download a three-day window to disk</span></span>
+<span><span class="va">dest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"pecos"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">dest</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/download_images.html">download_images</a></span><span class="op">(</span></span>
+<span>  cam_id   <span class="op">=</span> <span class="va">cam</span><span class="op">$</span><span class="va">camId</span>,</span>
+<span>  dest_dir <span class="op">=</span> <span class="va">dest</span>,</span>
+<span>  size     <span class="op">=</span> <span class="st">"small"</span>,</span>
+<span>  time     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-06-10"</span>, <span class="st">"2025-06-12"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Assemble into an animated GIF</span></span>
+<span><span class="fu"><a href="reference/make_gif.html">make_gif</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="va">dest</span>, fps <span class="op">=</span> <span class="fl">3</span>, output <span class="op">=</span> <span class="st">"pecos.gif"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Or an MP4 video</span></span>
+<span><span class="fu"><a href="reference/make_video.html">make_video</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="va">dest</span>, fps <span class="op">=</span> <span class="fl">3</span>, output <span class="op">=</span> <span class="st">"pecos.mp4"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="core-functions">Core functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/find_cameras.html">find_cameras()</a></code></td>
+<td>Retrieve camera metadata; filter by NWIS site number or camera ID</td>
+</tr>
+<tr>
+<td><code><a href="reference/find_gage_cameras.html">find_gage_cameras()</a></code></td>
+<td>Like <code><a href="reference/find_cameras.html">find_cameras()</a></code>, plus NWIS site attributes (drainage area, HUC, state) via <strong>dataRetrieval</strong>
+</td>
+</tr>
+<tr>
+<td><code><a href="reference/list_images.html">list_images()</a></code></td>
+<td>List image filenames for a camera; filter by time window</td>
+</tr>
+<tr>
+<td><code><a href="reference/download_images.html">download_images()</a></code></td>
+<td>Download images to a local directory; resumes safely if interrupted</td>
+</tr>
+<tr>
+<td><code><a href="reference/make_gif.html">make_gif()</a></code></td>
+<td>Assemble images into an animated GIF</td>
+</tr>
+<tr>
+<td><code><a href="reference/make_video.html">make_video()</a></code></td>
+<td>Assemble images into an MP4 video</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
+<h2 id="authentication">Authentication<a class="anchor" aria-label="anchor" href="#authentication"></a>
+</h2>
+<p>Register for a free key at <a href="https://api.waterdata.usgs.gov/signup/" class="external-link uri">https://api.waterdata.usgs.gov/signup/</a>. Unauthenticated requests work but share a rate-limit pool. Store the key once and it persists across sessions:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/set_nims_key.html">set_nims_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span></code></pre></div>
+<p><code>flowcam</code> uses the same <code>API_USGS_PAT</code> environment variable as <strong>dataRetrieval</strong>, so one key covers both packages.</p>
+</div>
+<div class="section level2">
+<h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
+</h2>
+<ul>
+<li>
+<a href="articles/getting-started.html">Getting started</a> — authentication, discovering cameras, listing images, downloading, and creating GIFs and videos in one walkthrough.</li>
+<li>
+<a href="articles/pecos-river.html">Comparing two Pecos River gages</a> — use <code><a href="reference/find_gage_cameras.html">find_gage_cameras()</a></code> to enrich camera records with watershed metadata, download images from two sites on the same river reach, and produce a GIF and video to track a flow event moving downstream.</li>
+<li>
+<a href="reference/index.html">Function reference</a> — complete documentation for all exported functions.</li>
+</ul>
+</div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>

@@ -31,14 +31,14 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with flowcam</a></li>
-    <li><a class="dropdown-item" href="../articles/pecos-river.html">Monitoring the Pecos River with flowcam and dataRetrieval</a></li>
+    <li><a class="dropdown-item" href="../articles/pecos-river.html">Comparing two Pecos River gages with flowcam</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -68,27 +68,40 @@
 
 
 
-    <p><strong>flowcam</strong> provides a tidy interface to the USGS <a href="https://api.waterdata.usgs.gov/nims/v0" class="external-link">National Imagery Management System (NIMS)</a> API, which serves stream-gage camera images collected across the United States.</p>
-<section class="level2"><h2 id="authentication">Authentication<a class="anchor" aria-label="anchor" href="#authentication"></a>
-</h2>
-<p>NIMS requests can be made without an API key, but unauthenticated calls are rate-limited. Register for a free key at <a href="https://api.waterdata.usgs.gov/signup/" class="external-link uri">https://api.waterdata.usgs.gov/signup/</a> and store it with <code><a href="../reference/set_nims_key.html">set_nims_key()</a></code>:</p>
+    <p><strong>flowcam</strong> gives you a tidy interface to the USGS <a href="https://api.waterdata.usgs.gov/nims/v0" class="external-link">National Imagery Management System (NIMS)</a> API—the service that stores and serves images collected by stream-gage cameras across the United States. With a few function calls you can discover cameras, list available images, download them to disk, and stitch them into an animated GIF or MP4 video.</p>
+<p>Full function reference: <a href="https://connorb.github.io/flowcam/reference/" class="uri">https://connorb.github.io/flowcam/reference/</a></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ConnorB/flowcam" class="external-link">flowcam</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/set_nims_key.html">set_nims_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ConnorB/flowcam" class="external-link">flowcam</a></span><span class="op">)</span></span></code></pre></div>
 </div>
-<p><code><a href="../reference/set_nims_key.html">set_nims_key()</a></code> writes <code>API_USGS_PAT</code> to <code>~/.Renviron</code> and applies it to the current session immediately. All subsequent API calls in the session—and in future R sessions—use that key automatically. The same environment variable is read by the <code>dataRetrieval</code> package, so one key covers both.</p>
-</section><section class="level2"><h2 id="discovering-cameras">Discovering cameras<a class="anchor" aria-label="anchor" href="#discovering-cameras"></a>
+<section class="level2"><h2 id="authentication">Authentication<a class="anchor" aria-label="anchor" href="#authentication"></a>
 </h2>
-<p><code><a href="../reference/find_cameras.html">find_cameras()</a></code> returns a tibble of camera metadata. With no arguments it fetches all available cameras; pass <code>site_id</code> to narrow results to a specific NWIS site.</p>
-<p>The Pecos Web Camera near Roswell, NM (NWIS site 08385630) is a well-known site on the Pecos River:</p>
+<p>NIMS requests work without a key, but unauthenticated traffic shares a rate-limit pool across all users. Register for a free key at <a href="https://api.waterdata.usgs.gov/signup/" class="external-link uri">https://api.waterdata.usgs.gov/signup/</a> and store it once with <code><a href="../reference/set_nims_key.html">set_nims_key()</a></code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/set_nims_key.html">set_nims_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>This writes <code>API_USGS_PAT</code> to <code>~/.Renviron</code> and applies it to the current session immediately. Every subsequent call—in this session and in future R sessions—picks up the key automatically. The <code>dataRetrieval</code> package reads the same environment variable, so one key covers both.</p>
+</section><section class="level2"><h2 id="finding-cameras">Finding cameras<a class="anchor" aria-label="anchor" href="#finding-cameras"></a>
+</h2>
+<p><code><a href="../reference/find_cameras.html">find_cameras()</a></code> returns a tibble of camera metadata. Called with no arguments it fetches every camera currently registered in NIMS:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_cameras</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/find_cameras.html">find_cameras</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">all_cameras</span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>Narrow to a specific USGS monitoring location by passing its NWIS site number:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cam</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/find_cameras.html">find_cameras</a></span><span class="op">(</span>site_id <span class="op">=</span> <span class="st">"08385630"</span><span class="op">)</span></span>
 <span><span class="va">cam</span></span></code></pre></div>
 </div>
-<p>Key columns returned:</p>
+<p>This returns the Pecos Web Camera near Roswell, NM. The same record is reachable by its camera identifier:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/find_cameras.html">find_cameras</a></span><span class="op">(</span>cam_id <span class="op">=</span> <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>Key columns in the result:</p>
 <table class="table caption-top">
 <colgroup>
 <col style="width: 50%">
@@ -129,93 +142,177 @@
 </tr>
 </tbody>
 </table>
-<p>If you already know a camera ID, look it up directly:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/find_cameras.html">find_cameras</a></span><span class="op">(</span>cam_id <span class="op">=</span> <span class="va">cam</span><span class="op">$</span><span class="va">camId</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-</div>
-<p>To limit network traffic when you only need a few fields, use <code>return_fields</code>:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/find_cameras.html">find_cameras</a></span><span class="op">(</span></span>
-<span>  site_id       <span class="op">=</span> <span class="st">"08385630"</span>,</span>
-<span>  return_fields <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"camName"</span>, <span class="st">"newestImageDT"</span>, <span class="st">"smallDir"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-</section><section class="level2"><h2 id="listing-available-images">Listing available images<a class="anchor" aria-label="anchor" href="#listing-available-images"></a>
-</h2>
-<p><code><a href="../reference/list_images.html">list_images()</a></code> returns the filenames stored for a camera. Filenames alone are enough to build download URLs via <code><a href="../reference/build_image_url.html">build_image_url()</a></code>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cam_id</span> <span class="op">&lt;-</span> <span class="va">cam</span><span class="op">$</span><span class="va">camId</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span></span>
-<span><span class="co"># 10 most recent images</span></span>
-<span><span class="va">imgs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span><span class="va">cam_id</span>, limit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="va">imgs</span></span></code></pre></div>
-</div>
-<p>By default the result is a single-column tibble of filenames. Set <code>raw_item = TRUE</code> to also retrieve timestamps and file sizes:</p>
+<p>When you only need a couple of fields—for example when scanning hundreds of cameras—use <code>return_fields</code> to keep the response small:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span><span class="va">cam_id</span>, limit <span class="op">=</span> <span class="fl">10</span>, raw_item <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-</div>
-<section class="level3"><h3 id="filtering-by-date-and-time">Filtering by date and time<a class="anchor" aria-label="anchor" href="#filtering-by-date-and-time"></a>
-</h3>
-<p>Pass POSIXct values (in UTC) to <code>after</code> and <code>before</code> to fetch images from a specific window:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span></span>
-<span>  <span class="va">cam_id</span>,</span>
-<span>  after  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2025-06-01 00:00:00"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span>,</span>
-<span>  before <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2025-06-02 00:00:00"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/find_cameras.html">find_cameras</a></span><span class="op">(</span></span>
+<span>  site_id       <span class="op">=</span> <span class="st">"08385630"</span>,</span>
+<span>  return_fields <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"camName"</span>, <span class="st">"newestImageDT"</span>, <span class="st">"TL_enabled"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-</section></section><section class="level2"><h2 id="building-image-urls">Building image URLs<a class="anchor" aria-label="anchor" href="#building-image-urls"></a>
+<p><code>camId</code> is always returned regardless of what you pass to <code>return_fields</code>.</p>
+</section><section class="level2"><h2 id="listing-available-images">Listing available images<a class="anchor" aria-label="anchor" href="#listing-available-images"></a>
 </h2>
-<p><code><a href="../reference/build_image_url.html">build_image_url()</a></code> combines the camera’s base S3 directory with the filenames returned by <code><a href="../reference/list_images.html">list_images()</a></code>:</p>
+<p><code><a href="../reference/list_images.html">list_images()</a></code> returns the filenames stored for a camera. Pass either <code>cam_id</code> or <code>site_id</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">imgs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span><span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>, limit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">imgs</span></span></code></pre></div>
+</div>
+<p>The default is a single-column tibble of filenames ordered newest-first. Set <code>raw_item = TRUE</code> to also retrieve the capture timestamp and file size:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_image_url.html">build_image_url</a></span><span class="op">(</span><span class="va">cam</span>, <span class="va">imgs</span><span class="op">$</span><span class="va">filename</span>, size <span class="op">=</span> <span class="st">"small"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">urls</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span><span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>, limit <span class="op">=</span> <span class="fl">10</span>, raw_item <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
-<p>The <code>size</code> argument controls image dimensions:</p>
-<ul>
-<li>
-<code>"small"</code> (default) — ~720 px wide, suitable for monitoring dashboards</li>
-<li>
-<code>"overlay"</code> — full-size overlay image with gage-reading annotation</li>
-<li>
-<code>"thumb"</code> — thumbnail ~200 px tall</li>
-</ul></section><section class="level2"><h2 id="downloading-images">Downloading images<a class="anchor" aria-label="anchor" href="#downloading-images"></a>
-</h2>
-<p><code><a href="../reference/download_images.html">download_images()</a></code> wraps the steps above into a single call: it finds the camera, lists images, builds URLs, and saves the files to a local directory.</p>
+<section class="level3"><h3 id="filtering-by-time">Filtering by time<a class="anchor" aria-label="anchor" href="#filtering-by-time"></a>
+</h3>
+<p>The <code>time</code> argument accepts a Date, POSIXct, or ISO 8601 character value. A single value means “on or after”:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_images.html">download_images</a></span><span class="op">(</span></span>
-<span>  cam_id   <span class="op">=</span> <span class="va">cam_id</span>,</span>
-<span>  dest_dir <span class="op">=</span> <span class="va">dest</span>,</span>
-<span>  size     <span class="op">=</span> <span class="st">"small"</span>,</span>
-<span>  limit    <span class="op">=</span> <span class="fl">5</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">paths</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span></span>
+<span>  <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  time <span class="op">=</span> <span class="st">"2025-06-15"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
-<p>Already-downloaded files are skipped by default (<code>overwrite = FALSE</code>), making it easy to resume a partially completed download. Pass <code>overwrite = TRUE</code> to force re-download.</p>
-</section><section class="level2"><h2 id="timelapse-videos">Timelapse videos<a class="anchor" aria-label="anchor" href="#timelapse-videos"></a>
-</h2>
-<p>Many USGS cameras produce a daily timelapse MP4 stitched from images collected throughout the day. <code><a href="../reference/get_timelapse_url.html">get_timelapse_url()</a></code> returns the URL to that file:</p>
+<p>A two-element vector sets a closed window. Use <code>NA</code> for an open bound:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">url</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_timelapse_url.html">get_timelapse_url</a></span><span class="op">(</span><span class="va">cam_id</span><span class="op">)</span></span>
-<span><span class="va">url</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span></span>
+<span>  <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-06-01"</span>, <span class="st">"2025-06-03"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
-<p>You can open the URL directly in a browser or pass it to a video tool. A warning is emitted when <code>TL_enabled</code> is <code>FALSE</code> for the camera.</p>
+</section><section class="level3"><h3 id="chronological-order">Chronological order<a class="anchor" aria-label="anchor" href="#chronological-order"></a>
+</h3>
+<p>By default results are newest-first. Pass <code>recent = FALSE</code> to flip the order—useful when you want frames in chronological order before building an animation:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/list_images.html">list_images</a></span><span class="op">(</span><span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>, limit <span class="op">=</span> <span class="fl">20</span>, recent <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+</div>
+</section><section class="level3"><h3 id="pagination">Pagination<a class="anchor" aria-label="anchor" href="#pagination"></a>
+</h3>
+<p>The <code>limit</code> argument controls the API page size (1–50,000). When the camera has more images than <code>limit</code>, <code><a href="../reference/list_images.html">list_images()</a></code> paginates automatically using a timestamp cursor and returns all matching records in a single tibble.</p>
+</section></section><section class="level2"><h2 id="downloading-images">Downloading images<a class="anchor" aria-label="anchor" href="#downloading-images"></a>
+</h2>
+<p><code><a href="../reference/download_images.html">download_images()</a></code> lists the images for a camera and saves them to a local directory in one call. You must create the destination directory beforehand:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"roswell"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">dest</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_images.html">download_images</a></span><span class="op">(</span></span>
+<span>  cam_id   <span class="op">=</span> <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  dest_dir <span class="op">=</span> <span class="va">dest</span>,</span>
+<span>  size     <span class="op">=</span> <span class="st">"small"</span>,</span>
+<span>  limit    <span class="op">=</span> <span class="fl">10</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p><code>paths</code> is a character vector of local file paths returned invisibly. Failed downloads are represented as <code>NA</code>.</p>
+<section class="level3"><h3 id="image-sizes">Image sizes<a class="anchor" aria-label="anchor" href="#image-sizes"></a>
+</h3>
+<table class="table caption-top">
+<thead><tr class="header">
+<th><code>size</code></th>
+<th>Approximate dimensions</th>
+<th>Best for</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>
+<code>"small"</code> (default)</td>
+<td>~720 px wide</td>
+<td>Monitoring, animation</td>
+</tr>
+<tr class="even">
+<td><code>"overlay"</code></td>
+<td>Full resolution</td>
+<td>Gage-reading annotation visible</td>
+</tr>
+<tr class="odd">
+<td><code>"thumb"</code></td>
+<td>~200 px tall</td>
+<td>Quick visual overview</td>
+</tr>
+</tbody>
+</table></section><section class="level3"><h3 id="time-filtering">Time filtering<a class="anchor" aria-label="anchor" href="#time-filtering"></a>
+</h3>
+<p>Pass the same <code>time</code> argument as <code><a href="../reference/list_images.html">list_images()</a></code> to restrict which images are downloaded:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_images.html">download_images</a></span><span class="op">(</span></span>
+<span>  cam_id   <span class="op">=</span> <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  dest_dir <span class="op">=</span> <span class="va">dest</span>,</span>
+<span>  size     <span class="op">=</span> <span class="st">"small"</span>,</span>
+<span>  time     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-06-10"</span>, <span class="st">"2025-06-12"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+</section><section class="level3"><h3 id="resuming-partial-downloads">Resuming partial downloads<a class="anchor" aria-label="anchor" href="#resuming-partial-downloads"></a>
+</h3>
+<p><code><a href="../reference/download_images.html">download_images()</a></code> skips files that already exist in <code>dest_dir</code> when <code>overwrite = FALSE</code> (the default). If a download is interrupted, simply re-run the same call and only the missing files will be fetched.</p>
+</section></section><section class="level2"><h2 id="making-a-gif">Making a GIF<a class="anchor" aria-label="anchor" href="#making-a-gif"></a>
+</h2>
+<p><code><a href="../reference/make_gif.html">make_gif()</a></code> fetches images and encodes them into an animated GIF. It requires the <code>gifski</code> package.</p>
+<p>The simplest call streams images directly from NIMS—no separate download step needed:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/make_gif.html">make_gif</a></span><span class="op">(</span></span>
+<span>  cam_id <span class="op">=</span> <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  time   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-06-10"</span>, <span class="st">"2025-06-12"</span><span class="op">)</span>,</span>
+<span>  fps    <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"roswell.gif"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>If you already downloaded images with <code><a href="../reference/download_images.html">download_images()</a></code>, point to that directory with <code>dir</code> to skip re-downloading:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/make_gif.html">make_gif</a></span><span class="op">(</span></span>
+<span>  dir    <span class="op">=</span> <span class="va">dest</span>,</span>
+<span>  fps    <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"roswell.gif"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<section class="level3"><h3 id="one-frame-per-day">One frame per day<a class="anchor" aria-label="anchor" href="#one-frame-per-day"></a>
+</h3>
+<p>For a range spanning many days the result can be hundreds of frames. Pass <code>one_per_day = TRUE</code> to reduce the animation to a single frame per calendar day, selecting the image whose capture time is closest to local noon:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/make_gif.html">make_gif</a></span><span class="op">(</span></span>
+<span>  cam_id      <span class="op">=</span> <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  time        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-05-01"</span>, <span class="st">"2025-06-30"</span><span class="op">)</span>,</span>
+<span>  fps         <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  one_per_day <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  output      <span class="op">=</span> <span class="st">"roswell_monthly.gif"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>When <code>output</code> is not specified the file is written to <code>"&lt;cam_id&gt;.gif"</code> in the working directory.</p>
+</section></section><section class="level2"><h2 id="making-a-video">Making a video<a class="anchor" aria-label="anchor" href="#making-a-video"></a>
+</h2>
+<p><code><a href="../reference/make_video.html">make_video()</a></code> produces an MP4 instead of a GIF. It requires the <code>av</code> package and accepts the same arguments as <code><a href="../reference/make_gif.html">make_gif()</a></code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/make_video.html">make_video</a></span><span class="op">(</span></span>
+<span>  cam_id <span class="op">=</span> <span class="st">"NM_Pecos_Web_Camera_near_Roswell"</span>,</span>
+<span>  time   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-06-10"</span>, <span class="st">"2025-06-12"</span><span class="op">)</span>,</span>
+<span>  fps    <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"roswell.mp4"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>Build from an already-downloaded directory:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/make_video.html">make_video</a></span><span class="op">(</span></span>
+<span>  dir    <span class="op">=</span> <span class="va">dest</span>,</span>
+<span>  fps    <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"roswell.mp4"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>MP4 files are substantially smaller than equivalent GIFs at the same resolution and frame count, making them preferable for longer time ranges or larger image sizes. GIFs are more portable for sharing in contexts that don’t support video embedding.</p>
 </section><section class="level2"><h2 id="next-steps">Next steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
 </h2>
 <ul>
-<li>See <code><a href="../articles/pecos-river.html">vignette("pecos-river")</a></code> for a full monitoring workflow combining <strong>flowcam</strong> with streamflow data from <strong>dataRetrieval</strong>.</li>
-<li>Use <code><a href="../reference/find_gage_cameras.html">find_gage_cameras()</a></code> to retrieve camera metadata enriched with NWIS site attributes (drainage area, elevation, hydrologic unit, etc.).</li>
+<li>
+<code><a href="../articles/pecos-river.html">vignette("pecos-river")</a></code> shows how to use <code><a href="../reference/find_gage_cameras.html">find_gage_cameras()</a></code> to enrich camera records with NWIS site metadata and compare two cameras on the same river reach.</li>
+<li>The full function reference is at <a href="https://connorb.github.io/flowcam/reference/" class="uri">https://connorb.github.io/flowcam/reference/</a>.</li>
 </ul></section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);

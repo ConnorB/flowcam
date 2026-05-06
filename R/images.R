@@ -796,8 +796,9 @@ make_video <- function(
 
   cli::cli_inform("Encoding {n} frame{?s} at {fps} fps...")
 
-  # H.264 requires even dimensions; pad any odd width/height to the next even pixel.
-  vfilter <- "pad=iw+mod(iw,2):ih+mod(ih,2)"
+  # H.264 requires even dimensions; scale to nearest even width/height.
+  # mod() uses commas which ffmpeg's filtergraph parser treats as separators.
+  vfilter <- "scale=trunc(iw/2)*2:trunc(ih/2)*2"
 
   av::av_encode_video(paths, output, framerate = fps, vfilter = vfilter, verbose = FALSE)
 

@@ -1,7 +1,11 @@
 .empty_image_tibble <- function(raw_item) {
   if (raw_item) {
-    tibble::tibble(camId = character(), filename = character(),
-                   timestamp = character(), fs = integer())
+    tibble::tibble(
+      camId = character(),
+      filename = character(),
+      timestamp = character(),
+      fs = integer()
+    )
   } else {
     tibble::tibble(filename = character())
   }
@@ -69,8 +73,14 @@
 #' list_images("WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
 #'             limit = 5, raw_item = TRUE)
 #' }
-list_images <- function(cam_id = NULL, limit = 1000L, recent = TRUE,
-                        time = NULL, raw_item = FALSE, site_id = NULL) {
+list_images <- function(
+  cam_id = NULL,
+  limit = 1000L,
+  recent = TRUE,
+  time = NULL,
+  raw_item = FALSE,
+  site_id = NULL
+) {
   if (!is.null(cam_id) && !is.null(site_id)) {
     cli::cli_abort("Provide {.arg cam_id} or {.arg site_id}, not both.")
   }
@@ -94,14 +104,19 @@ list_images <- function(cam_id = NULL, limit = 1000L, recent = TRUE,
         )
       )
     }
-    cam_id   <- cams$camId[[1L]]
+    cam_id <- cams$camId[[1L]]
     cam_meta <- cams[1L, ]
   } else if (!is.character(cam_id) || length(cam_id) != 1L || !nzchar(cam_id)) {
     cli::cli_abort("{.arg cam_id} must be a single non-empty character string.")
   }
 
-  if (!is.numeric(limit) || length(limit) != 1L ||
-      is.na(limit) || limit < 1 || limit > 50000) {
+  if (
+    !is.numeric(limit) ||
+      length(limit) != 1L ||
+      is.na(limit) ||
+      limit < 1 ||
+      limit > 50000
+  ) {
     cli::cli_abort("{.arg limit} must be an integer between 1 and 50000.")
   }
   limit <- as.integer(limit)
@@ -114,15 +129,20 @@ list_images <- function(cam_id = NULL, limit = 1000L, recent = TRUE,
     }
     if (nrow(cam_meta) > 0L) {
       created <- cam_meta[["createdDate"]][[1L]]
-      newest  <- cam_meta[["newestImageDT"]][[1L]]
+      newest <- cam_meta[["newestImageDT"]][[1L]]
 
       parse_t <- function(s) {
-        if (is.null(s)) return(NULL)
-        r <- tryCatch(as.POSIXct(sub("T", " ", s), tz = "UTC"), error = function(e) NULL)
+        if (is.null(s)) {
+          return(NULL)
+        }
+        r <- tryCatch(
+          as.POSIXct(sub("T", " ", s), tz = "UTC"),
+          error = function(e) NULL
+        )
         if (!is.null(r) && !is.na(r)) r else NULL
       }
 
-      after_t  <- parse_t(time_range$after)
+      after_t <- parse_t(time_range$after)
       before_t <- parse_t(time_range$before)
 
       # Clamp start: must be >= createdDate and <= newestImageDT
@@ -164,53 +184,84 @@ list_images <- function(cam_id = NULL, limit = 1000L, recent = TRUE,
   # Paginate oldest-first using 'after' as a timestamp cursor.
   # rawItem=TRUE is always requested so we have timestamps to advance the cursor.
   # 'recent' ordering is applied after all pages are collected.
-  all_items     <- list()
+  all_items <- list()
   current_after <- time_range$after
 
   repeat {
     page <- nims_request(
       "/listFiles",
       query = list(
-        camId   = cam_id,
-        limit   = limit,
-        recent  = "false",
-        after   = current_after,
-        before  = time_range$before,
+        camId = cam_id,
+        limit = limit,
+        recent = "false",
+        after = current_after,
+        before = time_range$before,
         rawItem = "true"
       )
     )
 
-    if (length(page) == 0L) break
+    if (length(page) == 0L) {
+      break
+    }
     all_items <- c(all_items, page)
-    if (length(page) < limit) break
+    if (length(page) < limit) {
+      break
+    }
 
     last_t <- .parse_nims_ts(page[[length(page)]][["timestamp"]])
     if (is.null(last_t)) {
-      cli::cli_warn("Could not advance pagination cursor; results may be incomplete.")
+      cli::cli_warn(
+        "Could not advance pagination cursor; results may be incomplete."
+      )
       break
     }
     current_after <- format(last_t + 1, "%Y-%m-%dT%H:%M:%S", tz = "UTC")
   }
 
   if (length(all_items) == 0L) {
-    cli::cli_warn("No images found for camera {.val {cam_id}} with the given filters.")
+    cli::cli_warn(
+      "No images found for camera {.val {cam_id}} with the given filters."
+    )
     return(.empty_image_tibble(raw_item))
   }
 
-  if (recent) all_items <- rev(all_items)
+  if (recent) {
+    all_items <- rev(all_items)
+  }
 
   if (raw_item) {
     tibble::tibble(
-      camId     = vapply(all_items, function(x) x[["camId"]]     %||% NA_character_, character(1L)),
-      filename  = vapply(all_items, function(x) x[["filename"]]  %||% NA_character_, character(1L)),
-      timestamp = vapply(all_items, function(x) x[["timestamp"]] %||% NA_character_, character(1L)),
-      fs        = vapply(all_items, function(x) {
-        v <- x[["fs"]]; if (is.null(v)) NA_integer_ else as.integer(v)
-      }, integer(1L))
+      camId = vapply(
+        all_items,
+        function(x) x[["camId"]] %||% NA_character_,
+        character(1L)
+      ),
+      filename = vapply(
+        all_items,
+        function(x) x[["filename"]] %||% NA_character_,
+        character(1L)
+      ),
+      timestamp = vapply(
+        all_items,
+        function(x) x[["timestamp"]] %||% NA_character_,
+        character(1L)
+      ),
+      fs = vapply(
+        all_items,
+        function(x) {
+          v <- x[["fs"]]
+          if (is.null(v)) NA_integer_ else as.integer(v)
+        },
+        integer(1L)
+      )
     )
   } else {
     tibble::tibble(
-      filename = vapply(all_items, function(x) x[["filename"]] %||% NA_character_, character(1L))
+      filename = vapply(
+        all_items,
+        function(x) x[["filename"]] %||% NA_character_,
+        character(1L)
+      )
     )
   }
 }
@@ -240,14 +291,18 @@ list_images <- function(cam_id = NULL, limit = 1000L, recent = TRUE,
 #' imgs  <- list_images(cam$camId[[1]], limit = 5)
 #' urls  <- build_image_url(cam, imgs$filename, size = "small")
 #' }
-build_image_url <- function(camera_row, filename,
-                            size = c("small", "overlay", "thumb")) {
+build_image_url <- function(
+  camera_row,
+  filename,
+  size = c("small", "overlay", "thumb")
+) {
   size <- match.arg(size)
 
-  dir_col <- switch(size,
-    small   = "smallDir",
+  dir_col <- switch(
+    size,
+    small = "smallDir",
     overlay = "overlayDir",
-    thumb   = "thumbDir"
+    thumb = "thumbDir"
   )
 
   if (!dir_col %in% names(camera_row)) {
@@ -258,11 +313,15 @@ build_image_url <- function(camera_row, filename,
   }
 
   base_dir <- camera_row[[dir_col]]
-  if (length(base_dir) > 1L) base_dir <- base_dir[[1L]]
+  if (length(base_dir) > 1L) {
+    base_dir <- base_dir[[1L]]
+  }
   if (is.null(base_dir) || is.na(base_dir) || !nzchar(base_dir)) {
     cli::cli_abort("{.field {dir_col}} is missing or empty for this camera.")
   }
-  if (!endsWith(base_dir, "/")) base_dir <- paste0(base_dir, "/")
+  if (!endsWith(base_dir, "/")) {
+    base_dir <- paste0(base_dir, "/")
+  }
 
   paste0(base_dir, filename)
 }
@@ -303,9 +362,293 @@ get_timelapse_url <- function(cam_id) {
   if (is.null(tl_dir) || is.na(tl_dir) || !nzchar(tl_dir)) {
     cli::cli_abort("{.field tlDir} is missing for camera {.val {cam_id}}.")
   }
-  if (!endsWith(tl_dir, "/")) tl_dir <- paste0(tl_dir, "/")
+  if (!endsWith(tl_dir, "/")) {
+    tl_dir <- paste0(tl_dir, "/")
+  }
 
   paste0(tl_dir, cam_id, "_720.mp4")
+}
+
+# Given a vector of NIMS image paths, return one per local calendar day —
+# the path whose embedded timestamp is closest to noon in tz_str.
+.select_noon <- function(paths, tz_str) {
+  ts_raw <- sub(".*___(.+)\\.[^.]+$", "\\1", basename(paths))
+  ts_num <- vapply(ts_raw, function(t) {
+    out <- .parse_nims_ts(t)
+    if (is.null(out)) NA_real_ else as.numeric(out)
+  }, numeric(1L))
+
+  valid <- !is.na(ts_num)
+  if (!any(valid)) return(paths)
+
+  vpaths     <- paths[valid]
+  local_dt   <- as.POSIXct(ts_num[valid], origin = "1970-01-01", tz = tz_str)
+  local_date <- as.Date(local_dt, tz = tz_str)
+  local_noon <- as.POSIXct(
+    paste0(format(local_date, "%Y-%m-%d"), " 12:00:00"), tz = tz_str
+  )
+  dist <- abs(as.numeric(local_dt) - as.numeric(local_noon))
+
+  best <- tapply(seq_along(vpaths), local_date, function(idx) {
+    vpaths[idx[which.min(dist[idx])]]
+  }, simplify = FALSE)
+
+  sort(unname(unlist(best)))
+}
+
+#' Assemble camera images into an animated GIF
+#'
+#' Downloads images for a camera over a specified time range and assembles them
+#' into an animated GIF using the `magick` package. Provide either `cam_id` or
+#' `site_id` to identify the camera, and use `time` to restrict the range.
+#'
+#' When `dir` is supplied, images are read from that local directory instead of
+#' being downloaded. You can still pass `cam_id`/`site_id` to select only files
+#' belonging to a particular camera (matched by filename prefix) and `time` to
+#' filter by timestamp embedded in the filename — useful when a directory
+#' contains images from multiple cameras or a wider date range than needed.
+#'
+#' @param cam_id Character. Camera identifier. Cannot be used with `site_id`.
+#' @param site_id Character. NWIS site number (e.g. `"05366800"` or
+#'   `"USGS-05366800"`). Cannot be used with `cam_id`.
+#' @param time POSIXct, Date, or character vector of length 1 or 2. Same
+#'   semantics as [download_images()]. When `dir` is supplied, timestamps are
+#'   parsed from the filenames (NIMS format: `<camId>___<timestamp>.jpg`).
+#' @param output Character. File path for the output GIF. Defaults to
+#'   `"<cam_id>.gif"` (or `"<site_id>.gif"`, or the directory basename) in the
+#'   working directory.
+#' @param fps Positive number. Approximate frames per second. Will be snapped to
+#'   the nearest factor of 100 (1, 2, 4, 5, 10, 20, 25, 50, 100) as required by
+#'   `magick`. Default is `2`.
+#' @param size Image size passed to [download_images()]. One of `"small"`
+#'   (default), `"overlay"`, or `"thumb"`. Ignored when `dir` is supplied.
+#' @param limit Integer. Page size for the internal [list_images()] call.
+#'   Default is `1000`. Ignored when `dir` is supplied.
+#' @param dir Character. Path to a local directory of already-downloaded images.
+#'   When supplied, downloads are skipped and JPEG/PNG files are read from this
+#'   directory. `cam_id`/`site_id` and `time` still apply as filters.
+#' @param one_per_day Logical. If `TRUE`, reduce frames to one per calendar day
+#'   by selecting the image whose capture time is closest to noon in the
+#'   camera's local timezone (from the `tz` field of [find_cameras()]). Default
+#'   is `FALSE`.
+#'
+#' @return The output file path, invisibly.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Download and assemble images for a date range
+#' make_gif("WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
+#'          time = c("2025-06-01", "2025-06-02"), output = "chippewa.gif")
+#'
+#' # One frame per day from a local directory
+#' make_gif(cam_id = "NM_Pecos_Web_Camera_near_Roswell",
+#'          time        = c("2023-08-01", "2023-08-31"),
+#'          dir         = "~/Downloads/Pecos",
+#'          one_per_day = TRUE,
+#'          output      = "pecos_august.gif")
+#' }
+make_gif <- function(
+  cam_id = NULL,
+  site_id = NULL,
+  time = NULL,
+  output = NULL,
+  fps = 2,
+  size = "small",
+  limit = 1000L,
+  dir = NULL,
+  one_per_day = FALSE
+) {
+  if (!requireNamespace("magick", quietly = TRUE)) {
+    cli::cli_abort(
+      "The {.pkg magick} package is required. Install it with {.run install.packages('magick')}."
+    )
+  }
+
+  if (!is.numeric(fps) || length(fps) != 1L || is.na(fps) || fps <= 0) {
+    cli::cli_abort("{.arg fps} must be a single positive number.")
+  }
+
+  # image_animate requires fps to be a factor of 100 (delay = 100/fps integer)
+  valid_fps <- c(1, 2, 4, 5, 10, 20, 25, 50, 100)
+  snapped <- valid_fps[which.min(abs(valid_fps - fps))]
+  if (snapped != fps) {
+    cli::cli_inform(
+      "{.arg fps} {fps} is not a factor of 100; using {snapped} instead."
+    )
+    fps <- snapped
+  }
+
+  if (!is.null(cam_id) && !is.null(site_id)) {
+    cli::cli_abort("Provide {.arg cam_id} or {.arg site_id}, not both.")
+  }
+
+  # Resolve site_id -> cam_id once, for both dir and download paths.
+  # Keep cam_meta so the one_per_day timezone lookup can reuse it.
+  cam_meta <- NULL
+  if (!is.null(site_id)) {
+    site_id <- normalize_site_id(site_id)
+    cams <- find_cameras(site_id = site_id)
+    if (nrow(cams) == 0L) {
+      cli::cli_abort("No cameras found for site {.val {site_id}}.")
+    }
+    if (nrow(cams) > 1L) {
+      cli::cli_abort(
+        c(
+          "Site {.val {site_id}} has {nrow(cams)} cameras. Specify {.arg cam_id} directly.",
+          i = "Available camera IDs: {.val {cams$camId}}"
+        )
+      )
+    }
+    cam_id   <- cams$camId[[1L]]
+    cam_meta <- cams[1L, ]
+  }
+
+  if (!is.null(dir)) {
+    # --- Read from existing directory ---
+    if (!is.character(dir) || length(dir) != 1L || !nzchar(dir)) {
+      cli::cli_abort("{.arg dir} must be a single non-empty character string.")
+    }
+    if (!dir.exists(dir)) {
+      cli::cli_abort("{.path {dir}} does not exist.")
+    }
+
+    all_paths <- sort(
+      list.files(
+        dir,
+        pattern = "\\.(jpg|jpeg|png)$",
+        full.names = TRUE,
+        ignore.case = TRUE
+      )
+    )
+    if (length(all_paths) == 0L) {
+      cli::cli_abort("No JPEG/PNG images found in {.path {dir}}.")
+    }
+
+    # Filter by camera: filenames are "<camId>___<timestamp>.ext"
+    if (!is.null(cam_id)) {
+      all_paths <- all_paths[startsWith(basename(all_paths), cam_id)]
+      if (length(all_paths) == 0L) {
+        cli::cli_abort(
+          "No files matching camera {.val {cam_id}} found in {.path {dir}}."
+        )
+      }
+    }
+
+    # Filter by time: parse timestamp from filename
+    if (!is.null(time)) {
+      time_range <- parse_time_arg(time)
+
+      file_ts <- vapply(
+        basename(all_paths),
+        function(f) {
+          ts <- sub(".*___(.+)\\.[^.]+$", "\\1", f)
+          out <- .parse_nims_ts(ts)
+          if (is.null(out)) NA_real_ else as.numeric(out)
+        },
+        numeric(1L)
+      )
+
+      keep <- !is.na(file_ts)
+
+      if (!is.null(time_range$after)) {
+        after_num <- as.numeric(
+          as.POSIXct(time_range$after, tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
+        )
+        keep <- keep & file_ts >= after_num
+      }
+      if (!is.null(time_range$before)) {
+        before_num <- as.numeric(
+          as.POSIXct(
+            time_range$before,
+            tz = "UTC",
+            format = "%Y-%m-%dT%H:%M:%S"
+          )
+        )
+        keep <- keep & file_ts <= before_num
+      }
+
+      all_paths <- all_paths[keep]
+      if (length(all_paths) == 0L) {
+        cli::cli_abort(
+          "No images remain after applying the {.arg time} filter."
+        )
+      }
+    }
+
+    paths <- all_paths
+    label <- if (!is.null(cam_id)) cam_id else basename(normalizePath(dir))
+  } else {
+    # --- Download from API ---
+    if (is.null(cam_id)) {
+      cli::cli_abort("Provide {.arg cam_id}, {.arg site_id}, or {.arg dir}.")
+    }
+    label <- cam_id
+
+    tmp <- tempfile("flowcam_gif_")
+    dir.create(tmp)
+    on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+
+    paths <- download_images(
+      cam_id = cam_id,
+      dest_dir = tmp,
+      size = size,
+      limit = limit,
+      time = time
+    )
+    paths <- sort(paths[!is.na(paths)])
+
+    if (length(paths) == 0L) {
+      cli::cli_abort("No images were downloaded; cannot assemble GIF.")
+    }
+  }
+
+  if (one_per_day) {
+    # Resolve timezone from camera metadata, fetching if not already loaded.
+    tz_str <- NULL
+    if (!is.null(cam_meta) && nrow(cam_meta) > 0L) {
+      tz_str <- cam_meta[["tz"]][[1L]]
+    } else if (!is.null(cam_id)) {
+      cam_meta <- find_cameras(cam_id = cam_id)
+      if (nrow(cam_meta) > 0L) tz_str <- cam_meta[["tz"]][[1L]]
+    } else {
+      # No cam_id: infer from filename prefix (part before "___")
+      inferred_id <- sub("___.*$", "", basename(paths[[1L]]))
+      tmp_meta <- tryCatch(
+        find_cameras(cam_id = inferred_id),
+        error = function(e) NULL
+      )
+      if (!is.null(tmp_meta) && nrow(tmp_meta) > 0L) {
+        tz_str <- tmp_meta[["tz"]][[1L]]
+      }
+    }
+    if (is.null(tz_str) || is.na(tz_str) || !nzchar(tz_str)) {
+      cli::cli_warn(
+        "Could not determine camera timezone; using UTC for noon selection."
+      )
+      tz_str <- "UTC"
+    }
+    paths <- .select_noon(paths, tz_str)
+    cli::cli_inform(
+      "Selected {length(paths)} frame{?s} \\
+       (one per day, closest to noon {.val {tz_str}})."
+    )
+  }
+
+  if (is.null(output)) {
+    output <- paste0(label, ".gif")
+  }
+
+  n <- length(paths)
+  cli::cli_inform("Assembling {n} frame{?s} at {fps} fps...")
+
+  imgs <- magick::image_read(paths)
+  anim <- magick::image_animate(imgs, fps = fps, optimize = TRUE)
+  magick::image_write(anim, output)
+
+  cli::cli_alert_success("GIF written to {.path {output}}.")
+  invisible(output)
 }
 
 #' Download camera images to disk
@@ -359,9 +702,15 @@ get_timelapse_url <- function(cam_id) {
 #'   limit    = 5
 #' )
 #' }
-download_images <- function(cam_id = NULL, dest_dir, size = "small",
-                            limit = 1000L, time = NULL,
-                            overwrite = FALSE, site_id = NULL) {
+download_images <- function(
+  cam_id = NULL,
+  dest_dir,
+  size = "small",
+  limit = 1000L,
+  time = NULL,
+  overwrite = FALSE,
+  site_id = NULL
+) {
   size <- match.arg(size, c("small", "overlay", "thumb"))
 
   if (!is.null(cam_id) && !is.null(site_id)) {
@@ -369,7 +718,9 @@ download_images <- function(cam_id = NULL, dest_dir, size = "small",
   }
 
   if (!is.character(dest_dir) || length(dest_dir) != 1L || !nzchar(dest_dir)) {
-    cli::cli_abort("{.arg dest_dir} must be a single non-empty character string.")
+    cli::cli_abort(
+      "{.arg dest_dir} must be a single non-empty character string."
+    )
   }
   if (!dir.exists(dest_dir)) {
     cli::cli_abort("{.path {dest_dir}} does not exist. Create it first.")
@@ -408,16 +759,16 @@ download_images <- function(cam_id = NULL, dest_dir, size = "small",
     return(invisible(character(0L)))
   }
 
-  filenames  <- files[["filename"]]
-  urls       <- build_image_url(cam[1L, ], filenames, size = size)
+  filenames <- files[["filename"]]
+  urls <- build_image_url(cam[1L, ], filenames, size = size)
   dest_paths <- file.path(dest_dir, filenames)
 
   n <- length(urls)
   downloaded <- character(n)
 
   cli::cli_progress_bar(
-    name   = paste0("Downloading ", n, " image", if (n != 1) "s"),
-    total  = n,
+    name = paste0("Downloading ", n, " image", if (n != 1) "s"),
+    total = n,
     format = "{cli::pb_bar} {cli::pb_current}/{cli::pb_total} | ETA: {cli::pb_eta}"
   )
 
@@ -430,23 +781,28 @@ download_images <- function(cam_id = NULL, dest_dir, size = "small",
       next
     }
 
-    tryCatch({
-      raw <- httr2::resp_body_raw(
-        httr2::req_perform(httr2::request(urls[[i]]))
-      )
-      writeBin(raw, dest)
-      downloaded[[i]] <- dest
-    }, error = function(e) {
-      cli::cli_warn("Failed to download {.url {urls[[i]]}}: {conditionMessage(e)}")
-      downloaded[[i]] <<- NA_character_
-    })
+    tryCatch(
+      {
+        raw <- httr2::resp_body_raw(
+          httr2::req_perform(httr2::request(urls[[i]]))
+        )
+        writeBin(raw, dest)
+        downloaded[[i]] <- dest
+      },
+      error = function(e) {
+        cli::cli_warn(
+          "Failed to download {.url {urls[[i]]}}: {conditionMessage(e)}"
+        )
+        downloaded[[i]] <<- NA_character_
+      }
+    )
 
     cli::cli_progress_update()
   }
 
   cli::cli_progress_done()
 
-  n_ok   <- sum(!is.na(downloaded))
+  n_ok <- sum(!is.na(downloaded))
   n_fail <- sum(is.na(downloaded))
   if (n_fail > 0L) {
     cli::cli_inform("Downloaded {n_ok} image{?s} ({n_fail} failed).")

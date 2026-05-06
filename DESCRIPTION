@@ -5,8 +5,8 @@ Version: 0.1.0
 Authors@R: person("Connor", "Brown", role = c("aut", "cre"),
     email = "ConnorBrown1996@gmail.com")
 Description: Provides functions to query camera metadata, list image filenames,
-    build image URLs, and download images from the U.S. Geological Survey
-    National Imagery Management System (NIMS) API
+    build image URLs, download images, and assemble animated GIFs from the U.S.
+    Geological Survey National Imagery Management System (NIMS) API
     <https://api.waterdata.usgs.gov/nims/v0>. Integrates with the
     'dataRetrieval' package to enrich camera records with NWIS site metadata.
     Authentication via the API_USGS_PAT environment variable follows the same
@@ -25,6 +25,7 @@ Suggests:
     dataRetrieval,
     httptest2,
     knitr,
+    magick,
     quarto,
     testthat (>= 3.0.0),
     withr

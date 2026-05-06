@@ -39,16 +39,18 @@ variable used by `dataRetrieval`.
 
 Useful links:
 
-- <https://github.com/ConnorB/flowcam>
-
 - <https://connorb.github.io/flowcam/>
+
+- <https://github.com/ConnorB/flowcam>
 
 - Report bugs at <https://github.com/ConnorB/flowcam/issues>
 
 ## Author
 
 **Maintainer**: Connor Brown <ConnorBrown1996@gmail.com>
+([ORCID](https://orcid.org/0000-0002-9680-8930))
 
 Authors:
 
 - Connor Brown <ConnorBrown1996@gmail.com>
+  ([ORCID](https://orcid.org/0000-0002-9680-8930))

@@ -59,7 +59,7 @@ make_video(dir = dest, fps = 10, one_per_day = TRUE, output = "kaw.mp4")
 | Function | Description |
 |----|----|
 | [`find_cameras()`](https://connorb.github.io/flowcam/reference/find_cameras.md) | Retrieve camera metadata; filter by NWIS site number or camera ID |
-| [`find_gage_cameras()`](https://connorb.github.io/flowcam/reference/find_gage_cameras.md) | Like [`find_cameras()`](https://connorb.github.io/flowcam/reference/find_cameras.md), plus NWIS site attributes (drainage area, HUC, state) via **dataRetrieval** |
+| [`find_gage_cameras()`](https://connorb.github.io/flowcam/reference/find_gage_cameras.md) | Like [`find_cameras()`](https://connorb.github.io/flowcam/reference/find_cameras.md), plus NWIS site attributes (drainage area, HUC, state) via [`dataRetrieval`](https://doi-usgs.github.io/dataRetrieval/) |
 | [`list_images()`](https://connorb.github.io/flowcam/reference/list_images.md) | List image filenames for a camera; filter by time window |
 | [`download_images()`](https://connorb.github.io/flowcam/reference/download_images.md) | Download images to a local directory; resumes safely if interrupted |
 | [`make_gif()`](https://connorb.github.io/flowcam/reference/make_gif.md) | Assemble images into an animated GIF |
@@ -77,23 +77,24 @@ set_nims_key("your_api_key_here")
 ```
 
 `flowcam` uses the same `API_USGS_PAT` environment variable as
-**dataRetrieval**, so one key covers both packages.
+[`dataRetrieval`](https://doi-usgs.github.io/dataRetrieval/), so one key
+covers both packages.
 
 ## Learn more
 
 - [Getting
-  started](https://connorb.github.io/flowcam/articles/getting-started.md)
+  started](https://connorb.github.io/flowcam/articles/getting-started.html)
   — authentication, discovering cameras, listing images, downloading,
   and creating GIFs and videos in one walkthrough.
 - [Comparing two Pecos River
-  gages](https://connorb.github.io/flowcam/articles/pecos-river.md) —
+  gages](https://connorb.github.io/flowcam/articles/pecos-river.html) —
   use
   [`find_gage_cameras()`](https://connorb.github.io/flowcam/reference/find_gage_cameras.md)
   to enrich camera records with watershed metadata, download images from
   two sites on the same river reach, and produce a GIF and video to
   track a flow event moving downstream.
 - [Function
-  reference](https://connorb.github.io/flowcam/reference/index.md) —
+  reference](https://connorb.github.io/flowcam/reference/index.html) —
   complete documentation for all exported functions.
 
 # Package index

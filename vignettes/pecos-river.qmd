@@ -1,10 +1,10 @@
 ---
-title: "Monitoring the Pecos River with flowcam and dataRetrieval"
+title: "Comparing two Pecos River gages with flowcam"
 format: html
 execute:
   eval: false
 vignette: >
-  %\VignetteIndexEntry{Monitoring the Pecos River with flowcam and dataRetrieval}
+  %\VignetteIndexEntry{Comparing two Pecos River gages with flowcam}
   %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,159 +17,189 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette walks through a practical monitoring workflow using two USGS stream-gage cameras on the Pecos River in southeastern New Mexico:
+The Pecos River drains the Sacramento Mountains before flowing southeast through the Roswell Basin toward the Texas state line. Two USGS stream-gage cameras sit roughly 45 km apart along this reach:
 
-| Site | NWIS ID | Description |
+| Site | NWIS ID | Camera ID |
 |---|---|---|
-| Pecos Web Camera near Roswell | 08385630 | Visual monitoring at the Roswell reach |
-| Pecos River near Acme | 08386000 | ~45 km downstream; long-term flow record |
+| Pecos Web Camera near Roswell | 08385630 | `NM_Pecos_Web_Camera_near_Roswell` |
+| Pecos River near Acme | 08386000 | `NM_Pecos_River_near_Acme` |
 
-The workflow pairs camera images from **flowcam** with streamflow data from **dataRetrieval** to put the visual record in hydrologic context.
+Because a flood pulse typically takes several hours to travel between the two sites, comparing the image records lets you watch a flow event propagate downstream. This vignette shows how to discover both cameras, list and download images, and produce an animated GIF and an MP4 from the two sites.
 
 ```{r libraries}
 library(flowcam)
 library(dataRetrieval)  # install.packages("dataRetrieval") if needed
 ```
 
-## Site metadata and camera discovery
+## Camera discovery with gage metadata
 
-`find_gage_cameras()` calls `find_cameras()` for a site and then joins in NWIS attributes—drainage area, state, county, hydrologic unit code—in a single step:
+`find_gage_cameras()` wraps `find_cameras()` and joins in NWIS site attributes—drainage area, state, county, hydrologic unit code—via `dataRetrieval::read_waterdata_monitoring_location()`. The result has every column returned by `find_cameras()` plus the enriched NWIS columns where available.
 
-```{r find-gage-cameras}
+```{r find-gage-roswell}
 roswell <- find_gage_cameras("08385630")
 roswell
 ```
 
-The result includes all camera columns from `find_cameras()` plus columns such as `monitoring_location_name`, `state_name`, `drain_area_va`, and `hydrologic_unit_code` where available.
-
-```{r acme-cameras}
+```{r find-gage-acme}
 acme <- find_gage_cameras("08386000")
 acme
 ```
 
-## Inspecting camera details
+Columns added by the NWIS join include:
 
-Useful fields to check before downloading:
+| Column | Description |
+|---|---|
+| `monitoring_location_name` | Full official site name |
+| `drain_area_va` | Drainage area in square miles |
+| `hydrologic_unit_code` | 12-digit HUC |
+| `state_name` | State of the monitoring location |
 
-```{r cam-detail}
-# When was the most recent image captured?
+Compare drainage area between the two sites—Acme is downstream so its contributing watershed is larger:
+
+```{r compare-metadata}
+data.frame(
+  site      = c("Roswell", "Acme"),
+  site_id   = c("08385630", "08386000"),
+  drain_mi2 = c(roswell$drain_area_va, acme$drain_area_va),
+  lat       = c(roswell$lat, acme$lat),
+  lng       = c(roswell$lng, acme$lng)
+)
+```
+
+Check image availability before downloading. `newestImageDT` (UTC) tells you when each camera last reported:
+
+```{r check-availability}
 roswell$newestImageDT
-
-# Is timelapse enabled?
-roswell$TL_enabled
-
-# Hydrologic context
-roswell[, c("monitoring_location_name", "drain_area_va",
-             "hydrologic_unit_code", "state_name")]
+acme$newestImageDT
 ```
 
-## Fetching recent images at the Roswell camera
+## Listing images from both cameras
 
-Retrieve the 20 most recent images with metadata so we know the timestamps:
+Use the same `time` window for both sites so the image sets are directly comparable. A two-element vector passed to `time` sets a closed interval; a single value means "on or after":
 
-```{r list-recent}
-cam_id <- roswell$camId[[1]]
+```{r list-both}
+window <- c("2025-06-10", "2025-06-13")
 
-recent <- list_images(cam_id, limit = 20, raw_item = TRUE)
-recent
-```
-
-`timestamp` is in the NIMS `YYYY-MM-DDTHH-MM-SSZ` format and records the image capture time in UTC. The `fs` column gives file size in kilobytes.
-
-## Pairing images with streamflow
-
-Retrieve mean daily discharge (parameter code `00060`) from the downstream Acme gage (08386000) over the same period. NWIS data is easy to pull with `dataRetrieval::readNWISdv()`:
-
-```{r flow-data}
-# Derive date range from the images we just listed
-# timestamps are like "2025-06-15T14-30-00Z"
-ts_clean <- gsub("T(\\d{2})-(\\d{2})-(\\d{2})Z$", "T\\1:\\2:\\3Z",
-                  recent$timestamp)
-image_times <- as.POSIXct(ts_clean, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
-
-start_date <- format(min(image_times), "%Y-%m-%d")
-end_date   <- format(max(image_times), "%Y-%m-%d")
-
-flow <- readNWISdv(
-  siteNumbers = "08386000",
-  parameterCd = "00060",
-  startDate   = start_date,
-  endDate     = end_date
-)
-flow <- renameNWISColumns(flow)
-flow
-```
-
-## Downloading images around a flow event
-
-Suppose the Acme gage recorded a notable rise. Download images from the Roswell camera bracketing that period to see whether it was visible upstream:
-
-```{r event-download}
-event_start <- as.POSIXct("2025-06-10 00:00:00", tz = "UTC")
-event_end   <- as.POSIXct("2025-06-12 23:59:59", tz = "UTC")
-
-dest <- file.path(tempdir(), "pecos_event")
-dir.create(dest, showWarnings = FALSE)
-
-paths <- download_images(
-  cam_id   = cam_id,
-  dest_dir = dest,
-  size     = "small",
-  after    = event_start,
-  before   = event_end,
-  limit    = 50
+roswell_imgs <- list_images(
+  "NM_Pecos_Web_Camera_near_Roswell",
+  time     = window,
+  raw_item = TRUE,
+  recent   = FALSE        # chronological order
 )
 
-# How many images were captured during the event window?
-length(paths)
+acme_imgs <- list_images(
+  "NM_Pecos_River_near_Acme",
+  time     = window,
+  raw_item = TRUE,
+  recent   = FALSE
+)
 ```
 
-Re-running `download_images()` after a partial download is safe: files already in `dest` are skipped unless you pass `overwrite = TRUE`.
+Bind the two results to compare counts and timestamps side by side:
 
-## Overlay images for gage-reading annotation
-
-The `"overlay"` size embeds a gage-height annotation directly on the image. These are useful for field verification and training data:
-
-```{r overlay}
-# Build URLs for the overlay version of the same images
-imgs <- list_images(cam_id,
-                    after  = event_start,
-                    before = event_end,
-                    limit  = 5)
-
-overlay_urls <- build_image_url(roswell, imgs$filename, size = "overlay")
-overlay_urls
-```
-
-## Daily timelapse for the Roswell camera
-
-If timelapse is enabled, `get_timelapse_url()` returns the URL to the current day's MP4:
-
-```{r timelapse}
-tl_url <- get_timelapse_url(cam_id)
-tl_url
-```
-
-Open the URL in a browser or use `utils::browseURL(tl_url)` to view it directly.
-
-## Comparing both sites
-
-The Acme gage (08386000) is ~45 km downstream of the Roswell camera (08385630). Checking both cameras on the same day makes it possible to track a flood wave moving through the reach:
-
-```{r two-sites}
-# List the most recent image from each site on the same day
-roswell_imgs <- list_images(roswell$camId[[1]], limit = 1, raw_item = TRUE)
-acme_imgs    <- list_images(acme$camId[[1]],   limit = 1, raw_item = TRUE)
-
+```{r compare-images}
 rbind(
-  data.frame(site = "Roswell (08385630)", roswell_imgs),
-  data.frame(site = "Acme (08386000)",    acme_imgs)
+  cbind(site = "Roswell (08385630)", roswell_imgs),
+  cbind(site = "Acme (08386000)",    acme_imgs)
 )
 ```
+
+`raw_item = TRUE` returns `camId`, `filename`, `timestamp`, and `fs` (file size in kilobytes). The timestamps are UTC strings in NIMS format (`YYYY-MM-DDTHH-MM-SSZ`).
+
+## Downloading images from both sites
+
+Create a separate destination directory for each site so the files don't mix:
+
+```{r dirs}
+roswell_dir <- file.path(tempdir(), "roswell")
+acme_dir    <- file.path(tempdir(), "acme")
+dir.create(roswell_dir, showWarnings = FALSE)
+dir.create(acme_dir,    showWarnings = FALSE)
+```
+
+Download the Roswell images first:
+
+```{r download-roswell}
+roswell_paths <- download_images(
+  cam_id   = "NM_Pecos_Web_Camera_near_Roswell",
+  dest_dir = roswell_dir,
+  size     = "small",
+  time     = window
+)
+```
+
+Then the Acme images:
+
+```{r download-acme}
+acme_paths <- download_images(
+  cam_id   = "NM_Pecos_River_near_Acme",
+  dest_dir = acme_dir,
+  size     = "small",
+  time     = window
+)
+```
+
+Both calls skip files that already exist on disk (`overwrite = FALSE` by default), so re-running after an interrupted download is safe. Switch to `size = "overlay"` if you want the full-resolution images with the gage-height annotation overlaid.
+
+## GIF of the Roswell camera
+
+Build an animated GIF from the images already on disk by pointing `dir` at the download directory. This avoids a second round of network requests:
+
+```{r gif-roswell}
+make_gif(
+  dir    = roswell_dir,
+  fps    = 3,
+  output = "roswell_event.gif"
+)
+```
+
+For a time range spanning multiple days, `one_per_day = TRUE` reduces the animation to one frame per calendar day—the image captured closest to local noon in the camera's time zone. This keeps the GIF from becoming unwieldy over a long monitoring period:
+
+```{r gif-one-per-day}
+make_gif(
+  cam_id      = "NM_Pecos_Web_Camera_near_Roswell",
+  time        = c("2025-05-01", "2025-06-30"),
+  fps         = 4,
+  one_per_day = TRUE,
+  output      = "roswell_seasonal.gif"
+)
+```
+
+Adjust `fps` to control playback speed: 1–2 fps gives enough time to read individual frames during a flood event; 4+ fps is better for a seasonal overview where you want to convey change over weeks.
+
+`make_gif()` requires the `gifski` package (and `jpeg`/`png` for JPEG-format source images, which NIMS typically serves).
+
+## Video of the Acme camera
+
+`make_video()` produces an MP4 from the same inputs. It accepts identical arguments to `make_gif()` and requires the `av` package:
+
+```{r video-acme}
+make_video(
+  dir    = acme_dir,
+  fps    = 3,
+  output = "acme_event.mp4"
+)
+```
+
+You can also stream directly from NIMS without a prior download:
+
+```{r video-direct}
+make_video(
+  cam_id = "NM_Pecos_River_near_Acme",
+  time   = window,
+  fps    = 3,
+  output = "acme_event.mp4"
+)
+```
+
+An MP4 at the same resolution and frame count is substantially smaller than a GIF. For a multi-day event with hundreds of frames, video is generally the better choice; GIF is more convenient for embedding in tools that don't support video.
 
 ## Tips
 
-- **Rate limits**: unauthenticated requests share a pool across all users. Call `set_nims_key()` once (see `vignette("getting-started")`) to raise your personal limit.
-- **Large downloads**: set `limit` conservatively while exploring; images at the `"small"` size are roughly 150–300 KB each. The `"thumb"` size is useful when you only need a visual overview.
-- **Time zones**: all NIMS timestamps are UTC. The `tz` column in camera metadata records the local time zone of the installation if you need to convert.
-- **Image availability**: `newestImageDT` in the camera metadata gives the age of the most recent image—useful for detecting outages before you start a download loop.
+- **Check `newestImageDT` first.** If the timestamp is hours or days old the camera may be offline. Spot-check before committing to a large download.
+- **Use `"thumb"` for exploration.** Thumbnails are around 200 px tall and much smaller than `"small"` images. Download a thumb set first to verify coverage before switching to `"small"` or `"overlay"`.
+- **Time zones.** All NIMS timestamps are UTC. The `tz` column in the camera metadata records the camera's local IANA time zone if you need to convert for display or `one_per_day` interpretation.
+- **Large downloads.** `"small"` images are roughly 150–300 KB each. A 30-day window at one image per 15 minutes is around 2,900 files (~600 MB). Plan accordingly and use `overwrite = FALSE` to resume safely.
+- **Rate limits.** Unauthenticated requests share a pool across all users. Store an API key with `set_nims_key()` (see `vignette("getting-started")`) to use your personal allocation.
+
+Full function reference: <https://connorb.github.io/flowcam/reference/>

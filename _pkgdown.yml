@@ -2,3 +2,14 @@ url: https://connorb.github.io/flowcam/
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    left:  [intro, articles, reference]
+    right: [search, github]
+
+articles:
+  - title: "Vignettes"
+    navbar: ~
+    contents:
+      - getting-started
+      - pecos-river

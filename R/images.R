@@ -373,119 +373,57 @@ get_timelapse_url <- function(cam_id) {
 # the path whose embedded timestamp is closest to noon in tz_str.
 .select_noon <- function(paths, tz_str) {
   ts_raw <- sub(".*___(.+)\\.[^.]+$", "\\1", basename(paths))
-  ts_num <- vapply(ts_raw, function(t) {
-    out <- .parse_nims_ts(t)
-    if (is.null(out)) NA_real_ else as.numeric(out)
-  }, numeric(1L))
+  ts_num <- vapply(
+    ts_raw,
+    function(t) {
+      out <- .parse_nims_ts(t)
+      if (is.null(out)) NA_real_ else as.numeric(out)
+    },
+    numeric(1L)
+  )
 
   valid <- !is.na(ts_num)
-  if (!any(valid)) return(paths)
+  if (!any(valid)) {
+    return(paths)
+  }
 
-  vpaths     <- paths[valid]
-  local_dt   <- as.POSIXct(ts_num[valid], origin = "1970-01-01", tz = tz_str)
+  vpaths <- paths[valid]
+  local_dt <- as.POSIXct(ts_num[valid], origin = "1970-01-01", tz = tz_str)
   local_date <- as.Date(local_dt, tz = tz_str)
   local_noon <- as.POSIXct(
-    paste0(format(local_date, "%Y-%m-%d"), " 12:00:00"), tz = tz_str
+    paste0(format(local_date, "%Y-%m-%d"), " 12:00:00"),
+    tz = tz_str
   )
   dist <- abs(as.numeric(local_dt) - as.numeric(local_noon))
 
-  best <- tapply(seq_along(vpaths), local_date, function(idx) {
-    vpaths[idx[which.min(dist[idx])]]
-  }, simplify = FALSE)
+  best <- tapply(
+    seq_along(vpaths),
+    local_date,
+    function(idx) {
+      vpaths[idx[which.min(dist[idx])]]
+    },
+    simplify = FALSE
+  )
 
   sort(unname(unlist(best)))
 }
 
-#' Assemble camera images into an animated GIF
-#'
-#' Downloads images for a camera over a specified time range and assembles them
-#' into an animated GIF using the `magick` package. Provide either `cam_id` or
-#' `site_id` to identify the camera, and use `time` to restrict the range.
-#'
-#' When `dir` is supplied, images are read from that local directory instead of
-#' being downloaded. You can still pass `cam_id`/`site_id` to select only files
-#' belonging to a particular camera (matched by filename prefix) and `time` to
-#' filter by timestamp embedded in the filename — useful when a directory
-#' contains images from multiple cameras or a wider date range than needed.
-#'
-#' @param cam_id Character. Camera identifier. Cannot be used with `site_id`.
-#' @param site_id Character. NWIS site number (e.g. `"05366800"` or
-#'   `"USGS-05366800"`). Cannot be used with `cam_id`.
-#' @param time POSIXct, Date, or character vector of length 1 or 2. Same
-#'   semantics as [download_images()]. When `dir` is supplied, timestamps are
-#'   parsed from the filenames (NIMS format: `<camId>___<timestamp>.jpg`).
-#' @param output Character. File path for the output GIF. Defaults to
-#'   `"<cam_id>.gif"` (or `"<site_id>.gif"`, or the directory basename) in the
-#'   working directory.
-#' @param fps Positive number. Approximate frames per second. Will be snapped to
-#'   the nearest factor of 100 (1, 2, 4, 5, 10, 20, 25, 50, 100) as required by
-#'   `magick`. Default is `2`.
-#' @param size Image size passed to [download_images()]. One of `"small"`
-#'   (default), `"overlay"`, or `"thumb"`. Ignored when `dir` is supplied.
-#' @param limit Integer. Page size for the internal [list_images()] call.
-#'   Default is `1000`. Ignored when `dir` is supplied.
-#' @param dir Character. Path to a local directory of already-downloaded images.
-#'   When supplied, downloads are skipped and JPEG/PNG files are read from this
-#'   directory. `cam_id`/`site_id` and `time` still apply as filters.
-#' @param one_per_day Logical. If `TRUE`, reduce frames to one per calendar day
-#'   by selecting the image whose capture time is closest to noon in the
-#'   camera's local timezone (from the `tz` field of [find_cameras()]). Default
-#'   is `FALSE`.
-#'
-#' @return The output file path, invisibly.
-#'
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' # Download and assemble images for a date range
-#' make_gif("WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
-#'          time = c("2025-06-01", "2025-06-02"), output = "chippewa.gif")
-#'
-#' # One frame per day from a local directory
-#' make_gif(cam_id = "NM_Pecos_Web_Camera_near_Roswell",
-#'          time        = c("2023-08-01", "2023-08-31"),
-#'          dir         = "~/Downloads/Pecos",
-#'          one_per_day = TRUE,
-#'          output      = "pecos_august.gif")
-#' }
-make_gif <- function(
-  cam_id = NULL,
-  site_id = NULL,
-  time = NULL,
-  output = NULL,
-  fps = 2,
-  size = "small",
-  limit = 1000L,
-  dir = NULL,
-  one_per_day = FALSE
+# Shared path-collection logic for make_gif() and make_video().
+# Returns list(paths, label, tmp_dir); tmp_dir is non-NULL when images were
+# downloaded to a temp directory — the caller must register on.exit() cleanup.
+.collect_paths <- function(
+  cam_id,
+  site_id,
+  time,
+  size,
+  limit,
+  dir,
+  one_per_day
 ) {
-  if (!requireNamespace("magick", quietly = TRUE)) {
-    cli::cli_abort(
-      "The {.pkg magick} package is required. Install it with {.run install.packages('magick')}."
-    )
-  }
-
-  if (!is.numeric(fps) || length(fps) != 1L || is.na(fps) || fps <= 0) {
-    cli::cli_abort("{.arg fps} must be a single positive number.")
-  }
-
-  # image_animate requires fps to be a factor of 100 (delay = 100/fps integer)
-  valid_fps <- c(1, 2, 4, 5, 10, 20, 25, 50, 100)
-  snapped <- valid_fps[which.min(abs(valid_fps - fps))]
-  if (snapped != fps) {
-    cli::cli_inform(
-      "{.arg fps} {fps} is not a factor of 100; using {snapped} instead."
-    )
-    fps <- snapped
-  }
-
   if (!is.null(cam_id) && !is.null(site_id)) {
     cli::cli_abort("Provide {.arg cam_id} or {.arg site_id}, not both.")
   }
 
-  # Resolve site_id -> cam_id once, for both dir and download paths.
-  # Keep cam_meta so the one_per_day timezone lookup can reuse it.
   cam_meta <- NULL
   if (!is.null(site_id)) {
     site_id <- normalize_site_id(site_id)
@@ -501,12 +439,13 @@ make_gif <- function(
         )
       )
     }
-    cam_id   <- cams$camId[[1L]]
+    cam_id <- cams$camId[[1L]]
     cam_meta <- cams[1L, ]
   }
 
+  tmp_dir <- NULL
+
   if (!is.null(dir)) {
-    # --- Read from existing directory ---
     if (!is.character(dir) || length(dir) != 1L || !nzchar(dir)) {
       cli::cli_abort("{.arg dir} must be a single non-empty character string.")
     }
@@ -526,7 +465,6 @@ make_gif <- function(
       cli::cli_abort("No JPEG/PNG images found in {.path {dir}}.")
     }
 
-    # Filter by camera: filenames are "<camId>___<timestamp>.ext"
     if (!is.null(cam_id)) {
       all_paths <- all_paths[startsWith(basename(all_paths), cam_id)]
       if (length(all_paths) == 0L) {
@@ -536,7 +474,6 @@ make_gif <- function(
       }
     }
 
-    # Filter by time: parse timestamp from filename
     if (!is.null(time)) {
       time_range <- parse_time_arg(time)
 
@@ -580,19 +517,16 @@ make_gif <- function(
     paths <- all_paths
     label <- if (!is.null(cam_id)) cam_id else basename(normalizePath(dir))
   } else {
-    # --- Download from API ---
     if (is.null(cam_id)) {
       cli::cli_abort("Provide {.arg cam_id}, {.arg site_id}, or {.arg dir}.")
     }
     label <- cam_id
-
-    tmp <- tempfile("flowcam_gif_")
-    dir.create(tmp)
-    on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+    tmp_dir <- tempfile("flowcam_")
+    dir.create(tmp_dir)
 
     paths <- download_images(
       cam_id = cam_id,
-      dest_dir = tmp,
+      dest_dir = tmp_dir,
       size = size,
       limit = limit,
       time = time
@@ -600,12 +534,12 @@ make_gif <- function(
     paths <- sort(paths[!is.na(paths)])
 
     if (length(paths) == 0L) {
-      cli::cli_abort("No images were downloaded; cannot assemble GIF.")
+      unlink(tmp_dir, recursive = TRUE)
+      cli::cli_abort("No images were downloaded.")
     }
   }
 
   if (one_per_day) {
-    # Resolve timezone from camera metadata, fetching if not already loaded.
     tz_str <- NULL
     if (!is.null(cam_meta) && nrow(cam_meta) > 0L) {
       tz_str <- cam_meta[["tz"]][[1L]]
@@ -613,7 +547,6 @@ make_gif <- function(
       cam_meta <- find_cameras(cam_id = cam_id)
       if (nrow(cam_meta) > 0L) tz_str <- cam_meta[["tz"]][[1L]]
     } else {
-      # No cam_id: infer from filename prefix (part before "___")
       inferred_id <- sub("___.*$", "", basename(paths[[1L]]))
       tmp_meta <- tryCatch(
         find_cameras(cam_id = inferred_id),
@@ -636,18 +569,236 @@ make_gif <- function(
     )
   }
 
+  list(paths = paths, label = label, tmp_dir = tmp_dir)
+}
+
+#' Assemble camera images into an animated GIF
+#'
+#' Downloads images for a camera over a specified time range and assembles them
+#' into an animated GIF using the `gifski` package. Provide either `cam_id` or
+#' `site_id` to identify the camera, and use `time` to restrict the range.
+#'
+#' When `dir` is supplied, images are read from that local directory instead of
+#' being downloaded. You can still pass `cam_id`/`site_id` to select only files
+#' belonging to a particular camera (matched by filename prefix) and `time` to
+#' filter by timestamp embedded in the filename — useful when a directory
+#' contains images from multiple cameras or a wider date range than needed.
+#'
+#' JPEG frames are converted to PNG in a temporary directory before encoding
+#' because `gifski` only accepts PNG input. The `jpeg` and `png` packages are
+#' required when any frames are JPEG.
+#'
+#' @param cam_id Character. Camera identifier. Cannot be used with `site_id`.
+#' @param site_id Character. NWIS site number (e.g. `"05366800"` or
+#'   `"USGS-05366800"`). Cannot be used with `cam_id`.
+#' @param time POSIXct, Date, or character vector of length 1 or 2. Same
+#'   semantics as [download_images()]. When `dir` is supplied, timestamps are
+#'   parsed from the filenames (NIMS format: `<camId>___<timestamp>.jpg`).
+#' @param output Character. File path for the output GIF. Defaults to
+#'   `"<cam_id>.gif"` (or `"<site_id>.gif"`, or the directory basename) in the
+#'   working directory.
+#' @param fps Positive number. Frames per second. Any positive value is
+#'   accepted. Default is `2`.
+#' @param size Image size passed to [download_images()]. One of `"small"`
+#'   (default), `"overlay"`, or `"thumb"`. Ignored when `dir` is supplied.
+#' @param limit Integer. Page size for the internal [list_images()] call.
+#'   Default is `1000`. Ignored when `dir` is supplied.
+#' @param dir Character. Path to a local directory of already-downloaded images.
+#'   When supplied, downloads are skipped and JPEG/PNG files are read from this
+#'   directory. `cam_id`/`site_id` and `time` still apply as filters.
+#' @param one_per_day Logical. If `TRUE`, reduce frames to one per calendar day
+#'   by selecting the image whose capture time is closest to noon in the
+#'   camera's local timezone (from the `tz` field of [find_cameras()]). Default
+#'   is `FALSE`.
+#'
+#' @return The output file path, invisibly.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Download and assemble images for a date range
+#' make_gif("WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
+#'          time = c("2025-06-01", "2025-06-02"), output = "chippewa.gif")
+#'
+#' # One frame per day from a local directory
+#' make_gif(cam_id = "NM_Pecos_Web_Camera_near_Roswell",
+#'          time        = c("2023-08-01", "2023-08-31"),
+#'          dir         = "~/Downloads/Pecos",
+#'          one_per_day = TRUE,
+#'          output      = "pecos_august.gif")
+#' }
+make_gif <- function(
+  cam_id = NULL,
+  site_id = NULL,
+  time = NULL,
+  output = NULL,
+  fps = 2,
+  size = "small",
+  limit = 1000L,
+  dir = NULL,
+  one_per_day = FALSE
+) {
+  if (!requireNamespace("gifski", quietly = TRUE)) {
+    cli::cli_abort(
+      "The {.pkg gifski} package is required. Install it with {.run install.packages('gifski')}."
+    )
+  }
+
+  if (!is.numeric(fps) || length(fps) != 1L || is.na(fps) || fps <= 0) {
+    cli::cli_abort("{.arg fps} must be a single positive number.")
+  }
+
+  cp <- .collect_paths(cam_id, site_id, time, size, limit, dir, one_per_day)
+  if (!is.null(cp$tmp_dir)) {
+    on.exit(unlink(cp$tmp_dir, recursive = TRUE), add = TRUE)
+  }
+
+  paths <- cp$paths
+  label <- cp$label
+  n <- length(paths)
+
   if (is.null(output)) {
     output <- paste0(label, ".gif")
   }
 
-  n <- length(paths)
+  # gifski only accepts PNG; convert any JPEG frames to a temp directory.
+  jpeg_idx <- grepl("\\.(jpg|jpeg)$", paths, ignore.case = TRUE)
+  if (any(jpeg_idx)) {
+    if (
+      !requireNamespace("jpeg", quietly = TRUE) ||
+        !requireNamespace("png", quietly = TRUE)
+    ) {
+      cli::cli_abort(
+        c(
+          "JPEG-to-PNG conversion requires the {.pkg jpeg} and {.pkg png} packages.",
+          i = "Install them with {.run install.packages(c('jpeg', 'png'))}."
+        )
+      )
+    }
+    png_tmp <- tempfile("flowcam_png_")
+    dir.create(png_tmp)
+    on.exit(unlink(png_tmp, recursive = TRUE), add = TRUE)
+
+    for (i in which(jpeg_idx)) {
+      out_path <- file.path(
+        png_tmp,
+        paste0(tools::file_path_sans_ext(basename(paths[i])), ".png")
+      )
+      png::writePNG(jpeg::readJPEG(paths[i]), out_path)
+      paths[i] <- out_path
+    }
+  }
+
+  # Preserve original frame dimensions.
+  first_dim <- dim(png::readPNG(paths[[1L]]))
+
   cli::cli_inform("Assembling {n} frame{?s} at {fps} fps...")
 
-  imgs <- magick::image_read(paths)
-  anim <- magick::image_animate(imgs, fps = fps, optimize = TRUE)
-  magick::image_write(anim, output)
+  gifski::gifski(
+    paths,
+    gif_file = output,
+    width = first_dim[2L],
+    height = first_dim[1L],
+    delay = 1 / fps,
+    progress = FALSE
+  )
 
   cli::cli_alert_success("GIF written to {.path {output}}.")
+  invisible(output)
+}
+
+#' Assemble camera images into an MP4 video
+#'
+#' Downloads images for a camera over a specified time range and encodes them
+#' into an MP4 video using the `av` package. Provide either `cam_id` or
+#' `site_id` to identify the camera, and use `time` to restrict the range.
+#'
+#' When `dir` is supplied, images are read from that local directory instead of
+#' being downloaded. You can still pass `cam_id`/`site_id` to select only files
+#' belonging to a particular camera (matched by filename prefix) and `time` to
+#' filter by timestamp embedded in the filename — useful when a directory
+#' contains images from multiple cameras or a wider date range than needed.
+#'
+#' @param cam_id Character. Camera identifier. Cannot be used with `site_id`.
+#' @param site_id Character. NWIS site number (e.g. `"05366800"` or
+#'   `"USGS-05366800"`). Cannot be used with `cam_id`.
+#' @param time POSIXct, Date, or character vector of length 1 or 2. Same
+#'   semantics as [download_images()]. When `dir` is supplied, timestamps are
+#'   parsed from the filenames (NIMS format: `<camId>___<timestamp>.jpg`).
+#' @param output Character. File path for the output MP4. Defaults to
+#'   `"<cam_id>.mp4"` (or `"<site_id>.mp4"`, or the directory basename) in the
+#'   working directory.
+#' @param fps Positive number. Frames per second. Any positive value is
+#'   accepted. Default is `2`.
+#' @param size Image size passed to [download_images()]. One of `"small"`
+#'   (default), `"overlay"`, or `"thumb"`. Ignored when `dir` is supplied.
+#' @param limit Integer. Page size for the internal [list_images()] call.
+#'   Default is `1000`. Ignored when `dir` is supplied.
+#' @param dir Character. Path to a local directory of already-downloaded images.
+#'   When supplied, downloads are skipped and JPEG/PNG files are read from this
+#'   directory. `cam_id`/`site_id` and `time` still apply as filters.
+#' @param one_per_day Logical. If `TRUE`, reduce frames to one per calendar day
+#'   by selecting the image whose capture time is closest to noon in the
+#'   camera's local timezone (from the `tz` field of [find_cameras()]). Default
+#'   is `FALSE`.
+#'
+#' @return The output file path, invisibly.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Download and assemble images for a date range
+#' make_video("WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
+#'            time = c("2025-06-01", "2025-06-02"), output = "chippewa.mp4")
+#'
+#' # One frame per day from a local directory
+#' make_video(cam_id = "NM_Pecos_Web_Camera_near_Roswell",
+#'            time        = c("2023-08-01", "2023-08-31"),
+#'            dir         = "~/Downloads/Pecos",
+#'            one_per_day = TRUE,
+#'            output      = "pecos_august.mp4")
+#' }
+make_video <- function(
+  cam_id = NULL,
+  site_id = NULL,
+  time = NULL,
+  output = NULL,
+  fps = 2,
+  size = "small",
+  limit = 1000L,
+  dir = NULL,
+  one_per_day = FALSE
+) {
+  if (!requireNamespace("av", quietly = TRUE)) {
+    cli::cli_abort(
+      "The {.pkg av} package is required. Install it with {.run install.packages('av')}."
+    )
+  }
+
+  if (!is.numeric(fps) || length(fps) != 1L || is.na(fps) || fps <= 0) {
+    cli::cli_abort("{.arg fps} must be a single positive number.")
+  }
+
+  cp <- .collect_paths(cam_id, site_id, time, size, limit, dir, one_per_day)
+  if (!is.null(cp$tmp_dir)) {
+    on.exit(unlink(cp$tmp_dir, recursive = TRUE), add = TRUE)
+  }
+
+  paths <- cp$paths
+  label <- cp$label
+  n <- length(paths)
+
+  if (is.null(output)) {
+    output <- paste0(label, ".mp4")
+  }
+
+  cli::cli_inform("Encoding {n} frame{?s} at {fps} fps...")
+
+  av::av_encode_video(paths, output, framerate = fps, verbose = FALSE)
+
+  cli::cli_alert_success("Video written to {.path {output}}.")
   invisible(output)
 }
 

@@ -14,5 +14,7 @@
   : Get the timelapse video URL for a camera
 - [`list_images()`](https://connorb.github.io/flowcam/reference/list_images.md)
   : List image filenames for a NIMS camera
+- [`make_gif()`](https://connorb.github.io/flowcam/reference/make_gif.md)
+  : Assemble camera images into an animated GIF
 - [`set_nims_key()`](https://connorb.github.io/flowcam/reference/set_nims_key.md)
   : Store your USGS API key in .Renviron

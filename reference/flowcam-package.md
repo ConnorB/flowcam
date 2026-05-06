@@ -41,6 +41,8 @@ Useful links:
 
 - <https://github.com/ConnorB/flowcam>
 
+- <https://connorb.github.io/flowcam/>
+
 - Report bugs at <https://github.com/ConnorB/flowcam/issues>
 
 ## Author

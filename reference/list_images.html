@@ -50,12 +50,12 @@ full image URLs.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">list_images</span><span class="op">(</span></span>
-<span>  <span class="va">cam_id</span>,</span>
+<span>  cam_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  limit <span class="op">=</span> <span class="fl">1000L</span>,</span>
 <span>  recent <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  after <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  before <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  raw_item <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  raw_item <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  site_id <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -64,13 +64,14 @@ full image URLs.</p>
 
 
 <dl><dt id="arg-cam-id">cam_id<a class="anchor" aria-label="anchor" href="#arg-cam-id"></a></dt>
-<dd><p>Character. Camera identifier (required). Use <code><a href="find_cameras.html">find_cameras()</a></code>
-to look up valid IDs.</p></dd>
+<dd><p>Character. Camera identifier. Use <code><a href="find_cameras.html">find_cameras()</a></code> to look up
+valid IDs. Cannot be used together with <code>site_id</code>.</p></dd>
 
 
 <dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
-<dd><p>Integer between 1 and 50000. Maximum number of records to
-return. Default is <code>1000</code>.</p></dd>
+<dd><p>Integer between 1 and 50000. Number of records fetched per
+API request (page size). Default is <code>1000</code>. All matching images are
+returned via automatic pagination regardless of this value.</p></dd>
 
 
 <dt id="arg-recent">recent<a class="anchor" aria-label="anchor" href="#arg-recent"></a></dt>
@@ -78,16 +79,14 @@ return. Default is <code>1000</code>.</p></dd>
 first. If <code>FALSE</code>, return the oldest images first.</p></dd>
 
 
-<dt id="arg-after">after<a class="anchor" aria-label="anchor" href="#arg-after"></a></dt>
-<dd><p>POSIXct, Date, or character. Return only images captured on or
-after this datetime. Character strings are passed through unchanged; the
-API accepts ISO 8601 (<code>"2025-12-31T00:00:00"</code>) and NIMS format
+<dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
+<dd><p>POSIXct, Date, or character vector of length 1 or 2 used to
+filter images by capture time. A length-1 value is treated as a start
+(on or after). A length-2 vector sets the start and end; use <code>NA</code> for an
+open bound (<code>c("2025-06-01", NA)</code> = on or after; <code>c(NA, "2025-06-02")</code> =
+on or before). Character strings are passed through unchanged; the API
+accepts ISO 8601 (<code>"2025-12-31T00:00:00"</code>) and NIMS format
 (<code>"2025-12-31T00-00-00Z"</code>).</p></dd>
-
-
-<dt id="arg-before">before<a class="anchor" aria-label="anchor" href="#arg-before"></a></dt>
-<dd><p>POSIXct, Date, or character. Return only images captured on or
-before this datetime.</p></dd>
 
 
 <dt id="arg-raw-item">raw_item<a class="anchor" aria-label="anchor" href="#arg-raw-item"></a></dt>
@@ -95,24 +94,46 @@ before this datetime.</p></dd>
 <code>filename</code>, <code>timestamp</code>, and <code>fs</code> (file size in kb). If <code>FALSE</code> (default),
 return a single-column tibble of filenames.</p></dd>
 
+
+<dt id="arg-site-id">site_id<a class="anchor" aria-label="anchor" href="#arg-site-id"></a></dt>
+<dd><p>Character. NWIS site number (e.g. <code>"05366800"</code> or
+<code>"USGS-05366800"</code>). Cannot be used together with <code>cam_id</code>. If the site has
+more than one camera, supply <code>cam_id</code> directly.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble. When <code>raw_item = FALSE</code>, one column: <code>filename</code>. When
 <code>raw_item = TRUE</code>, four columns: <code>camId</code>, <code>filename</code>, <code>timestamp</code>, <code>fs</code>.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Identify the camera with either <code>cam_id</code> or <code>site_id</code> — provide exactly one.
+<code>site_id</code> accepts both bare NWIS numbers (<code>"05366800"</code>) and the <code>USGS-</code>
+prefixed form (<code>"USGS-05366800"</code>).  When a site has multiple cameras,
+specify the desired camera via <code>cam_id</code> instead.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># 10 most recent images</span></span></span>
+<span class="r-in"><span><span class="co"># 10 most recent images by cam_id</span></span></span>
 <span class="r-in"><span><span class="fu">list_images</span><span class="op">(</span><span class="st">"WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire"</span>, limit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># By USGS site ID (bare or prefixed)</span></span></span>
+<span class="r-in"><span><span class="fu">list_images</span><span class="op">(</span>site_id <span class="op">=</span> <span class="st">"05366800"</span>, limit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">list_images</span><span class="op">(</span>site_id <span class="op">=</span> <span class="st">"USGS-05366800"</span>, limit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Images in a date window</span></span></span>
 <span class="r-in"><span><span class="fu">list_images</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="st">"WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire"</span>,</span></span>
-<span class="r-in"><span>  after  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2025-06-01"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  before <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2025-06-02"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-06-01"</span>, <span class="st">"2025-06-02"</span><span class="op">)</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Open-ended: on or after June 1</span></span></span>
+<span class="r-in"><span><span class="fu">list_images</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="st">"WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire"</span>,</span></span>
+<span class="r-in"><span>  time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2025-06-01"</span>, <span class="cn">NA</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># With metadata</span></span></span>

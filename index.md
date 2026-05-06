@@ -1,5 +1,10 @@
 # flowcam
 
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+<!-- badges: end -->
+
 **flowcam** provides a tidy interface to the USGS [National Imagery Management System (NIMS)](https://api.waterdata.usgs.gov/nims/v0), the API that stores and serves images collected by stream-gage cameras across the United States. Discover cameras, list and download images, and assemble them into animated GIFs or MP4 videos — all from R.
 
 ![Pecos Web Camera near Roswell, NM — 30 days at one frame per day](man/figures/roswell.gif)

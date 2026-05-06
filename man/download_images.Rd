@@ -5,18 +5,18 @@
 \title{Download camera images to disk}
 \usage{
 download_images(
-  cam_id,
+  cam_id = NULL,
   dest_dir,
   size = "small",
-  limit = 10L,
-  after = NULL,
-  before = NULL,
-  overwrite = FALSE
+  limit = 1000L,
+  time = NULL,
+  overwrite = FALSE,
+  site_id = NULL
 )
 }
 \arguments{
 \item{cam_id}{Character. Camera identifier. Use \code{\link[=find_cameras]{find_cameras()}} to look up
-valid IDs.}
+valid IDs. Cannot be used together with \code{site_id}.}
 
 \item{dest_dir}{Character. Path to an existing local directory where images
 will be saved.}
@@ -24,16 +24,21 @@ will be saved.}
 \item{size}{Image size passed to \code{\link[=build_image_url]{build_image_url()}}. One of \code{"small"}
 (default), \code{"overlay"}, or \code{"thumb"}.}
 
-\item{limit}{Integer. Maximum number of images to download. Default is \code{10}.}
+\item{limit}{Integer between 1 and 50000. Page size for the internal
+\code{\link[=list_images]{list_images()}} call. Default is \code{1000}. All images in the requested
+time range are downloaded via automatic pagination.}
 
-\item{after}{POSIXct, Date, or character. Only download images captured on
-or after this datetime.}
-
-\item{before}{POSIXct, Date, or character. Only download images captured on
-or before this datetime.}
+\item{time}{POSIXct, Date, or character vector of length 1 or 2 used to
+filter images by capture time. A length-1 value is treated as a start
+(on or after). A length-2 vector sets the start and end; use \code{NA} for an
+open bound. See \code{\link[=list_images]{list_images()}} for full details.}
 
 \item{overwrite}{Logical. If \code{FALSE} (default), skip files that already
 exist in \code{dest_dir} (resume behaviour).}
+
+\item{site_id}{Character. NWIS site number (e.g. \code{"05366800"} or
+\code{"USGS-05366800"}). Cannot be used together with \code{cam_id}. If the site has
+more than one camera, supply \code{cam_id} directly.}
 }
 \value{
 A character vector of local file paths, invisibly. Failed downloads
@@ -44,10 +49,24 @@ Lists available images for a camera and downloads them to a local directory.
 Images are fetched directly from USGS S3 storage; no API key is required for
 the downloads themselves.
 }
+\details{
+Identify the camera with either \code{cam_id} or \code{site_id} — provide exactly one.
+\code{site_id} accepts both bare NWIS numbers (\code{"05366800"}) and the \verb{USGS-}
+prefixed form (\code{"USGS-05366800"}).  When a site has multiple cameras,
+specify the desired camera via \code{cam_id} instead.
+}
 \examples{
 \dontrun{
+# By cam_id
 paths <- download_images(
   "WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
+  dest_dir = tempdir(),
+  limit    = 5
+)
+
+# By USGS site ID
+paths <- download_images(
+  site_id  = "USGS-05366800",
   dest_dir = tempdir(),
   limit    = 5
 )

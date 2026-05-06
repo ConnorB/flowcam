@@ -35,7 +35,7 @@ test_that("find_gage_cameras() errors without dataRetrieval installed", {
 })
 
 test_that("find_gage_cameras() validates site_id format", {
-  expect_error(find_gage_cameras("not-a-site-id"), "8-to-15-digit")
-  expect_error(find_gage_cameras("1234567"),        "8-to-15-digit")  # too short
-  expect_error(find_gage_cameras(12345678),          "8-to-15-digit")  # not char
+  expect_error(find_gage_cameras("not-a-site-id"), "8-15 digits")
+  expect_error(find_gage_cameras("1234567"),        "8-15 digits")  # too short
+  expect_error(find_gage_cameras(12345678),          "single non-empty")  # not char
 })

@@ -39,6 +39,9 @@ find_cameras <- function(site_id = NULL, cam_id = NULL, return_fields = NULL) {
   if (!is.null(site_id) && !is.null(cam_id)) {
     cli::cli_abort("Provide {.arg site_id} or {.arg cam_id}, not both.")
   }
+  if (!is.null(site_id)) {
+    site_id <- normalize_site_id(site_id)
+  }
   if (!is.null(return_fields)) {
     if (!is.character(return_fields)) {
       cli::cli_abort("{.arg return_fields} must be a character vector.")
@@ -136,12 +139,7 @@ find_gage_cameras <- function(site_id) {
     reason = "to enrich camera records with NWIS site metadata"
   )
 
-  if (!is.character(site_id) || length(site_id) != 1L ||
-      !grepl("^\\d{8,15}$", site_id)) {
-    cli::cli_abort(
-      "{.arg site_id} must be a single 8-to-15-digit NWIS site number string (e.g. {.val 05366800})."
-    )
-  }
+  site_id <- normalize_site_id(site_id)
 
   cameras <- find_cameras(site_id = site_id)
 

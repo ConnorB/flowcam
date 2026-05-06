@@ -34,6 +34,7 @@ variable, the same variable used by \code{dataRetrieval}.
 Useful links:
 \itemize{
   \item \url{https://github.com/ConnorB/flowcam}
+  \item \url{https://connorb.github.io/flowcam/}
   \item Report bugs at \url{https://github.com/ConnorB/flowcam/issues}
 }
 

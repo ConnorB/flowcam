@@ -1,0 +1,26 @@
+[
+  {
+    "camId": "CAM123",
+    "nwisId": "01234567",
+    "camName": "Little River South Bank",
+    "camDesc": "Camera at Little River South Bank gaging station",
+    "lat": "44.966024",
+    "lng": "-87.91303",
+    "stateAbrv": "WI",
+    "tz": "US/Central",
+    "defaultPCode": "00065",
+    "createdDate": "2024-01-01T00:00:00.000Z",
+    "modifiedDate": "2025-01-01T00:00:00.000Z",
+    "newestImageDT": "2026-01-01T00:00:00.000Z",
+    "TL_enabled": true,
+    "TL_lastGeneratedDT": "2026-01-01T01:00:00.000Z",
+    "TL_lastImageUsedDT": "2026-01-01T00:00:00.000Z",
+    "hideCam": false,
+    "overlayDir": "https://usgs-nims-images.s3.amazonaws.com/overlay/CAM123/",
+    "thumbDir": "https://usgs-nims-images.s3.amazonaws.com/thumbnail/CAM123/",
+    "smallDir": "https://usgs-nims-images.s3.amazonaws.com/720/CAM123/",
+    "tlDir": "https://usgs-nims-images.s3.amazonaws.com/timelapse/CAM123/",
+    "ingest": {"period": "247", "intr": 60, "hourlyStart": true},
+    "locus": "aws"
+  }
+]

@@ -5,35 +5,40 @@
 \title{List image filenames for a NIMS camera}
 \usage{
 list_images(
-  cam_id,
+  cam_id = NULL,
   limit = 1000L,
   recent = TRUE,
-  after = NULL,
-  before = NULL,
-  raw_item = FALSE
+  time = NULL,
+  raw_item = FALSE,
+  site_id = NULL
 )
 }
 \arguments{
-\item{cam_id}{Character. Camera identifier (required). Use \code{\link[=find_cameras]{find_cameras()}}
-to look up valid IDs.}
+\item{cam_id}{Character. Camera identifier. Use \code{\link[=find_cameras]{find_cameras()}} to look up
+valid IDs. Cannot be used together with \code{site_id}.}
 
-\item{limit}{Integer between 1 and 50000. Maximum number of records to
-return. Default is \code{1000}.}
+\item{limit}{Integer between 1 and 50000. Number of records fetched per
+API request (page size). Default is \code{1000}. All matching images are
+returned via automatic pagination regardless of this value.}
 
 \item{recent}{Logical. If \code{TRUE} (default), return the most recent images
 first. If \code{FALSE}, return the oldest images first.}
 
-\item{after}{POSIXct, Date, or character. Return only images captured on or
-after this datetime. Character strings are passed through unchanged; the
-API accepts ISO 8601 (\code{"2025-12-31T00:00:00"}) and NIMS format
+\item{time}{POSIXct, Date, or character vector of length 1 or 2 used to
+filter images by capture time. A length-1 value is treated as a start
+(on or after). A length-2 vector sets the start and end; use \code{NA} for an
+open bound (\code{c("2025-06-01", NA)} = on or after; \code{c(NA, "2025-06-02")} =
+on or before). Character strings are passed through unchanged; the API
+accepts ISO 8601 (\code{"2025-12-31T00:00:00"}) and NIMS format
 (\code{"2025-12-31T00-00-00Z"}).}
-
-\item{before}{POSIXct, Date, or character. Return only images captured on or
-before this datetime.}
 
 \item{raw_item}{Logical. If \code{TRUE}, return a tibble with columns \code{camId},
 \code{filename}, \code{timestamp}, and \code{fs} (file size in kb). If \code{FALSE} (default),
 return a single-column tibble of filenames.}
+
+\item{site_id}{Character. NWIS site number (e.g. \code{"05366800"} or
+\code{"USGS-05366800"}). Cannot be used together with \code{cam_id}. If the site has
+more than one camera, supply \code{cam_id} directly.}
 }
 \value{
 A tibble. When \code{raw_item = FALSE}, one column: \code{filename}. When
@@ -44,16 +49,31 @@ Returns a tibble of image filenames (or raw image metadata) for the
 specified camera. Use the filenames with \code{\link[=build_image_url]{build_image_url()}} to construct
 full image URLs.
 }
+\details{
+Identify the camera with either \code{cam_id} or \code{site_id} — provide exactly one.
+\code{site_id} accepts both bare NWIS numbers (\code{"05366800"}) and the \verb{USGS-}
+prefixed form (\code{"USGS-05366800"}).  When a site has multiple cameras,
+specify the desired camera via \code{cam_id} instead.
+}
 \examples{
 \dontrun{
-# 10 most recent images
+# 10 most recent images by cam_id
 list_images("WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire", limit = 10)
+
+# By USGS site ID (bare or prefixed)
+list_images(site_id = "05366800", limit = 10)
+list_images(site_id = "USGS-05366800", limit = 10)
 
 # Images in a date window
 list_images(
   "WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
-  after  = as.POSIXct("2025-06-01", tz = "UTC"),
-  before = as.POSIXct("2025-06-02", tz = "UTC")
+  time = as.POSIXct(c("2025-06-01", "2025-06-02"), tz = "UTC")
+)
+
+# Open-ended: on or after June 1
+list_images(
+  "WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire",
+  time = c("2025-06-01", NA)
 )
 
 # With metadata

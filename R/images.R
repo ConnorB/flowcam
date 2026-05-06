@@ -796,7 +796,10 @@ make_video <- function(
 
   cli::cli_inform("Encoding {n} frame{?s} at {fps} fps...")
 
-  av::av_encode_video(paths, output, framerate = fps, verbose = FALSE)
+  # H.264 requires even dimensions; pad any odd width/height to the next even pixel.
+  vfilter <- "pad=iw+mod(iw,2):ih+mod(ih,2)"
+
+  av::av_encode_video(paths, output, framerate = fps, vfilter = vfilter, verbose = FALSE)
 
   cli::cli_alert_success("Video written to {.path {output}}.")
   invisible(output)

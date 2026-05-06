@@ -169,6 +169,10 @@ Adjust `fps` to control playback speed: 1–2 fps gives enough time to read indi
 
 `make_gif()` requires the `gifski` package (and `jpeg`/`png` for JPEG-format source images, which NIMS typically serves).
 
+Here is a 30-day example from the Roswell camera (one frame per day):
+
+![Pecos Web Camera near Roswell — April 6 to May 5, 2026](roswell.gif)
+
 ## Video of the Acme camera
 
 `make_video()` produces an MP4 from the same inputs. It accepts identical arguments to `make_gif()` and requires the `av` package:
@@ -193,6 +197,10 @@ make_video(
 ```
 
 An MP4 at the same resolution and frame count is substantially smaller than a GIF. For a multi-day event with hundreds of frames, video is generally the better choice; GIF is more convenient for embedding in tools that don't support video.
+
+Here is the same 30-day window from the Acme camera for comparison:
+
+![Pecos River near Acme — April 6 to May 5, 2026](acme.gif)
 
 ## Tips
 

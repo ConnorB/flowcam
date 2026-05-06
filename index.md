@@ -2,6 +2,8 @@
 
 **flowcam** provides a tidy interface to the USGS [National Imagery Management System (NIMS)](https://api.waterdata.usgs.gov/nims/v0), the API that stores and serves images collected by stream-gage cameras across the United States. Discover cameras, list and download images, and assemble them into animated GIFs or MP4 videos — all from R.
 
+![Pecos Web Camera near Roswell, NM — 30 days at one frame per day](man/figures/roswell.gif)
+
 ## Installation
 
 ```r

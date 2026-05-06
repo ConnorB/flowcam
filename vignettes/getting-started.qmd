@@ -210,6 +210,10 @@ make_gif(
 
 When `output` is not specified the file is written to `"<cam_id>.gif"` in the working directory.
 
+Here is a 30-day example from the Pecos Web Camera near Roswell (one frame per day, closest to noon):
+
+![Pecos Web Camera near Roswell — April 6 to May 5, 2026](roswell.gif)
+
 ## Making a video
 
 `make_video()` produces an MP4 instead of a GIF. It requires the `av` package and accepts the same arguments as `make_gif()`:

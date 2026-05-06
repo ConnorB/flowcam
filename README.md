@@ -3,6 +3,7 @@
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![R-CMD-check](https://github.com/ConnorB/flowcam/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ConnorB/flowcam/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 **flowcam** provides a tidy interface to the USGS [National Imagery Management System (NIMS)](https://api.waterdata.usgs.gov/nims/v0), the API that stores and serves images collected by stream-gage cameras across the United States. Discover cameras, list and download images, and assemble them into animated GIFs or MP4 videos — all from R.

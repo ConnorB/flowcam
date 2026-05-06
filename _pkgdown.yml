@@ -1,16 +1,20 @@
 url: https://connorb.github.io/flowcam/
 template:
-  light-switch: true
+  light-switch: yes
   bootstrap: 5
-
 navbar:
   structure:
-    left:  [intro, articles, reference]
-    right: [search, github]
-
+    left:
+    - intro
+    - articles
+    - reference
+    right:
+    - search
+    - github
 articles:
-  - title: "Vignettes"
-    navbar: ~
-    contents:
-      - getting-started
-      - pecos-river
+- title: Vignettes
+  navbar: ~
+  contents:
+  - getting-started
+  - pecos-river
+

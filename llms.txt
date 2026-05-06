@@ -6,6 +6,11 @@ API that stores and serves images collected by stream-gage cameras
 across the United States. Discover cameras, list and download images,
 and assemble them into animated GIFs or MP4 videos — all from R.
 
+![Pecos Web Camera near Roswell, NM — 30 days at one frame per
+day](reference/figures/roswell.gif)
+
+Pecos Web Camera near Roswell, NM — 30 days at one frame per day
+
 ## Installation
 
 ``` r

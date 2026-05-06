@@ -254,6 +254,13 @@ make_gif(
 When `output` is not specified the file is written to `"<cam_id>.gif"`
 in the working directory.
 
+Here is a 30-day example from the Pecos Web Camera near Roswell (one
+frame per day, closest to noon):
+
+![](roswell.gif)
+
+Pecos Web Camera near Roswell — April 6 to May 5, 2026
+
 ## Making a video
 
 [`make_video()`](https://connorb.github.io/flowcam/reference/make_video.md)

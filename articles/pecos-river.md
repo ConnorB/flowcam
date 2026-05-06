@@ -197,6 +197,12 @@ seasonal overview where you want to convey change over weeks.
 requires the `gifski` package (and `jpeg`/`png` for JPEG-format source
 images, which NIMS typically serves).
 
+Here is a 30-day example from the Roswell camera (one frame per day):
+
+![](roswell.gif)
+
+Pecos Web Camera near Roswell — April 6 to May 5, 2026
+
 ## Video of the Acme camera
 
 [`make_video()`](https://connorb.github.io/flowcam/reference/make_video.md)
@@ -229,6 +235,12 @@ An MP4 at the same resolution and frame count is substantially smaller
 than a GIF. For a multi-day event with hundreds of frames, video is
 generally the better choice; GIF is more convenient for embedding in
 tools that don’t support video.
+
+Here is the same 30-day window from the Acme camera for comparison:
+
+![](acme.gif)
+
+Pecos River near Acme — April 6 to May 5, 2026
 
 ## Tips
 

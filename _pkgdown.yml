@@ -7,7 +7,7 @@ template:
   bootstrap: 5
   opengraph:
     image:
-      src: man/figures/logo.svg
+      src: man/figures/logo.png
       alt: "flowcam package logo"
 navbar:
   structure:

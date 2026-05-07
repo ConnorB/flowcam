@@ -122,6 +122,14 @@ covers both packages.
   : Query NIMS cameras
 - [`find_gage_cameras()`](https://connorb.github.io/flowcam/reference/find_gage_cameras.md)
   : Query NIMS cameras and enrich with NWIS site metadata
+- [`get_flow_statistics()`](https://connorb.github.io/flowcam/reference/get_flow_statistics.md)
+  : Retrieve historical flow statistics for a USGS gage
+- [`get_network_cameras()`](https://connorb.github.io/flowcam/reference/get_network_cameras.md)
+  : Find cameras on the same stream network
+- [`get_site_data_availability()`](https://connorb.github.io/flowcam/reference/get_site_data_availability.md)
+  : Discover available time series at a USGS gage
+- [`get_site_field_measurements()`](https://connorb.github.io/flowcam/reference/get_site_field_measurements.md)
+  : Retrieve manual field measurements for a USGS gage
 - [`get_site_streamflow()`](https://connorb.github.io/flowcam/reference/get_site_streamflow.md)
   : Retrieve streamflow data for a USGS gage
 - [`get_timelapse_url()`](https://connorb.github.io/flowcam/reference/get_timelapse_url.md)

@@ -5,14 +5,21 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Access USGS Stream Gage Camera Images via the NIMS API • flowcam</title>
+<title>Download and Animate USGS Stream-Gage Camera Images • flowcam</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="lightswitch.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Access USGS Stream Gage Camera Images via the NIMS API">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Download and Animate USGS Stream-Gage Camera Images">
 <meta name="description" content="Provides functions to query camera metadata, list image filenames, build image URLs, download images, and assemble animated GIFs from the U.S. Geological Survey National Imagery Management System (NIMS) API &lt;https://api.waterdata.usgs.gov/nims/v0&gt;. Integrates with the dataRetrieval package &lt;https://doi-usgs.github.io/dataRetrieval/&gt; to enrich camera records with NWIS site metadata. Authentication via the API_USGS_PAT environment variable follows the same convention used by dataRetrieval.">
 <meta property="og:description" content="Provides functions to query camera metadata, list image filenames, build image URLs, download images, and assemble animated GIFs from the U.S. Geological Survey National Imagery Management System (NIMS) API &lt;https://api.waterdata.usgs.gov/nims/v0&gt;. Integrates with the dataRetrieval package &lt;https://doi-usgs.github.io/dataRetrieval/&gt; to enrich camera records with NWIS site metadata. Authentication via the API_USGS_PAT environment variable follows the same convention used by dataRetrieval.">
+<meta property="og:image" content="https://connorb.github.io/flowcam/reference/figures/logo.svg">
+<meta property="og:image:alt" content="flowcam package logo">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -61,8 +68,11 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="flowcam">flowcam<a class="anchor" aria-label="anchor" href="#flowcam"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.svg" class="logo" alt=""><h1 id="flowcam-">flowcam 
+<a class="anchor" aria-label="anchor" href="#flowcam-"></a>
+</h1>
+</div>
 <!-- badges: start -->
 
 <p><strong>flowcam</strong> provides a tidy interface to the USGS <a href="https://api.waterdata.usgs.gov/nims/v0" class="external-link">National Imagery Management System (NIMS)</a>, the API that stores and serves images collected by stream-gage cameras across the United States. Discover cameras, list and download images, and assemble them into animated GIFs or MP4 videos — all from R.</p>
@@ -72,14 +82,21 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<p>Install from <a href="https://connorb.r-universe.dev/flowcam" class="external-link">R-universe</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
+<span>  <span class="st">"flowcam"</span>,</span>
+<span>  repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://connorb.r-universe.dev"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Alternatively, install the development version from <a href="https://github.com/ConnorB/flowcam/" class="external-link">GitHub</a>:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"ConnorB/flowcam"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connorb.github.io/flowcam/">flowcam</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Store your free USGS API key (one-time setup)</span></span>
@@ -155,7 +172,7 @@
 <h2 id="authentication">Authentication<a class="anchor" aria-label="anchor" href="#authentication"></a>
 </h2>
 <p>Register for a free key at <a href="https://api.waterdata.usgs.gov/signup/" class="external-link uri">https://api.waterdata.usgs.gov/signup/</a>. Unauthenticated requests work but share a rate-limit pool. Store the key once and it persists across sessions:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/set_nims_key.html">set_nims_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span></code></pre></div>
 <p><code>flowcam</code> uses the same <code>API_USGS_PAT</code> environment variable as <a href="https://doi-usgs.github.io/dataRetrieval/" class="external-link"><code>dataRetrieval</code></a>, so one key covers both packages.</p>
 </div>

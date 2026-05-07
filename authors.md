@@ -10,12 +10,12 @@
 Source:
 [`DESCRIPTION`](https://github.com/ConnorB/flowcam/blob/main/DESCRIPTION)
 
-Brown C (2026). *flowcam: Access USGS Stream Gage Camera Images via the
-NIMS API*. R package version 0.1.0.9000,
+Brown C (2026). *flowcam: Download and Animate USGS Stream-Gage Camera
+Images*. R package version 0.1.0.9000,
 <https://connorb.github.io/flowcam/>.
 
     @Manual{,
-      title = {flowcam: Access USGS Stream Gage Camera Images via the NIMS API},
+      title = {flowcam: Download and Animate USGS Stream-Gage Camera Images},
       author = {Connor Brown},
       year = {2026},
       note = {R package version 0.1.0.9000},

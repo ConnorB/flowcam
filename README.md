@@ -12,6 +12,16 @@
 
 ## Installation
 
+Install from [R-universe](https://connorb.r-universe.dev/flowcam):
+
+```r
+install.packages(
+  "flowcam",
+  repos = c("https://connorb.r-universe.dev", "https://cloud.r-project.org")
+)
+```
+Alternatively, install the development version from [GitHub](https://github.com/ConnorB/flowcam/):
+
 ```r
 # install.packages("pak")
 pak::pak("ConnorB/flowcam")

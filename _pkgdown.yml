@@ -5,6 +5,10 @@ authors:
 template:
   light-switch: true
   bootstrap: 5
+  opengraph:
+    image:
+      src: man/figures/logo.svg
+      alt: "flowcam package logo"
 navbar:
   structure:
     left:

@@ -1,6 +1,6 @@
 Package: flowcam
 Type: Package
-Title: Access USGS Stream Gage Camera Images via the NIMS API
+Title: Download and Animate USGS Stream-Gage Camera Images
 Version: 0.1.0.9000
 Authors@R: person("Connor", "Brown", role = c("aut", "cre"),
     email = "ConnorBrown1996@gmail.com",
@@ -14,7 +14,11 @@ Description: Provides functions to query camera metadata, list image filenames,
     API_USGS_PAT environment variable follows the same convention used by
     'dataRetrieval'.
 License: AGPL (>= 3)
-URL: https://connorb.github.io/flowcam/, https://github.com/ConnorB/flowcam
+URL: https://connorb.github.io/flowcam/,
+    https://github.com/ConnorB/flowcam,
+    https://connorb.r-universe.dev/flowcam
+X-schema.org-keywords: usgs, stream gage, streamgage, hydrology, water data,
+    river cameras, NIMS, NWIS, timelapse, flood monitoring, camera images, rstats
 BugReports: https://github.com/ConnorB/flowcam/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

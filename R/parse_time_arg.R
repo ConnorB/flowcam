@@ -93,3 +93,32 @@ parse_time_arg <- function(time) {
 
   list(after = after, before = before)
 }
+
+#' Build a dataRetrieval-compatible time vector from a flowcam time argument
+#'
+#' @param time `NULL`, a POSIXct/Date/character vector of length 1 or 2, or an
+#'   ISO 8601 duration string (e.g. `"P7D"`).
+#' @return A character vector to pass as the `time` argument to
+#'   `read_waterdata_continuous()` or `read_waterdata_daily()`.
+#' @keywords internal
+.build_dr_time <- function(time) {
+  if (is.null(time)) {
+    return(NA_character_)
+  }
+  # ISO 8601 duration — pass through unchanged
+  if (is.character(time) && length(time) == 1L && grepl("^[Pp]", time)) {
+    return(time)
+  }
+  # Validate and normalise via parse_time_arg, then reconstruct for dataRetrieval
+  tr <- parse_time_arg(time)
+  if (is.null(tr$after) && is.null(tr$before)) {
+    return(NA_character_)
+  }
+  if (is.null(tr$after)) {
+    return(c(NA_character_, tr$before))
+  }
+  if (is.null(tr$before)) {
+    return(tr$after)
+  }
+  c(tr$after, tr$before)
+}

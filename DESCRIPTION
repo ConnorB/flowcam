@@ -37,8 +37,9 @@ Imports:
     tibble (>= 3.0.0)
 Suggests:
     av,
-    dataRetrieval,
+    dataRetrieval (>= 2.7.17),
     gifski,
+    sf,
     httptest2,
     jpeg,
     knitr,

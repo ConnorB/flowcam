@@ -26,3 +26,34 @@ normalize_site_id <- function(site_id, arg_name = "site_id") {
   }
   site_id
 }
+
+#' Resolve a site_id/cam_id pair to a normalised site ID and ml_id
+#'
+#' Accepts exactly one of `site_id` or `cam_id`, validates it, and returns a
+#' named list with the bare NWIS site number and the `USGS-`-prefixed monitoring
+#' location ID required by the Water Data API.
+#'
+#' @param site_id Character or `NULL`.
+#' @param cam_id Character or `NULL`.
+#'
+#' @return A named list: `list(site_id = <chr>, ml_id = <chr>)`.
+#' @keywords internal
+.resolve_site_id <- function(site_id, cam_id) {
+  if (!is.null(site_id) && !is.null(cam_id)) {
+    cli::cli_abort("Provide {.arg site_id} or {.arg cam_id}, not both.")
+  }
+  if (is.null(site_id) && is.null(cam_id)) {
+    cli::cli_abort("Provide either {.arg site_id} or {.arg cam_id}.")
+  }
+  if (!is.null(cam_id)) {
+    cam_info <- find_cameras(cam_id = cam_id)
+    if (nrow(cam_info) == 0L || is.na(cam_info$nwisId[[1L]])) {
+      cli::cli_abort(
+        "Camera {.val {cam_id}} does not have an associated NWIS site ID."
+      )
+    }
+    site_id <- cam_info$nwisId[[1L]]
+  }
+  site_id <- normalize_site_id(site_id)
+  list(site_id = site_id, ml_id = paste0("USGS-", site_id))
+}

@@ -4,26 +4,39 @@
 \alias{find_gage_cameras}
 \title{Query NIMS cameras and enrich with NWIS site metadata}
 \usage{
-find_gage_cameras(site_id)
+find_gage_cameras(site_id, include_availability = TRUE)
 }
 \arguments{
 \item{site_id}{Character. A single 8-to-15-digit NWIS site number
 (e.g. \code{"05366800"}).}
+
+\item{include_availability}{Logical. When \code{TRUE} (default), a \code{data_types}
+list-column is appended containing a tibble of available time series for
+the site (from \code{\link[=get_site_data_availability]{get_site_data_availability()}}). Set to \code{FALSE} to skip this
+extra API call and return only the camera and site metadata.}
 }
 \value{
 A tibble with all camera columns from \code{\link[=find_cameras]{find_cameras()}} plus
 these site metadata columns when available: \code{monitoring_location_name},
 \code{state_name}, \code{county_name}, \code{hydrologic_unit_code}, \code{drainage_area}
 (total drainage area in square miles), and \code{altitude} (elevation in feet
-above the stated vertical datum).
+above the stated vertical datum). When \code{include_availability = TRUE},
+a \code{data_types} list-column is also included; each element is a tibble
+with columns from \code{\link[=get_site_data_availability]{get_site_data_availability()}}.
 }
 \description{
 Calls \code{\link[=find_cameras]{find_cameras()}} for the given NWIS site ID, then joins the result
 with site metadata from \code{dataRetrieval::read_waterdata_monitoring_location()}.
+Optionally appends a \code{data_types} list-column with the available time series
+at the site via \code{\link[=get_site_data_availability]{get_site_data_availability()}}.
 Requires the \code{dataRetrieval} package.
 }
 \examples{
 \dontrun{
+# With available time series (default)
 find_gage_cameras("05366800")
+
+# Site metadata only, no data availability call
+find_gage_cameras("05366800", include_availability = FALSE)
 }
 }

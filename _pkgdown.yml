@@ -22,6 +22,7 @@ navbar:
     - intro
     - articles
     - reference
+    - news
     right:
     - search
     - github

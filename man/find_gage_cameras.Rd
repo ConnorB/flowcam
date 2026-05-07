@@ -12,7 +12,10 @@ find_gage_cameras(site_id)
 }
 \value{
 A tibble with all camera columns from \code{\link[=find_cameras]{find_cameras()}} plus
-additional site metadata columns from \code{dataRetrieval} where available.
+these site metadata columns when available: \code{monitoring_location_name},
+\code{state_name}, \code{county_name}, \code{hydrologic_unit_code}, \code{drainage_area}
+(total drainage area in square miles), and \code{altitude} (elevation in feet
+above the stated vertical datum).
 }
 \description{
 Calls \code{\link[=find_cameras]{find_cameras()}} for the given NWIS site ID, then joins the result

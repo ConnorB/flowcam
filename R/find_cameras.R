@@ -36,6 +36,9 @@
 #' find_cameras(return_fields = c("camName", "newestImageDT"))
 #' }
 find_cameras <- function(site_id = NULL, cam_id = NULL, return_fields = NULL) {
+  .nims_enter()
+  on.exit(.nims_exit(), add = TRUE)
+
   if (!is.null(site_id) && !is.null(cam_id)) {
     cli::cli_abort("Provide {.arg site_id} or {.arg cam_id}, not both.")
   }

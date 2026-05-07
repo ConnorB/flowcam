@@ -61,6 +61,9 @@ make_video <- function(
   dir = NULL,
   one_per_day = FALSE
 ) {
+  .nims_enter()
+  on.exit(.nims_exit(), add = TRUE)
+
   if (!requireNamespace("av", quietly = TRUE)) {
     cli::cli_abort(
       "The {.pkg av} package is required. Install it with {.run install.packages('av')}."

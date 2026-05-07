@@ -14,13 +14,13 @@
 #' - [build_image_url()]: Construct full S3 image URLs from filenames.
 #' - [download_images()]: Download images to a local directory.
 #' - [get_timelapse_url()]: Get the timelapse video URL for a camera.
-#' - [set_nims_key()]: Save your USGS API key to `~/.Renviron`.
+#' - [set_usgs_api_key()]: Save your USGS API key to `~/.Renviron`.
 #'
 #' ## Authentication
 #'
 #' An API key is optional but prevents rate limiting. Register at
 #' <https://api.waterdata.usgs.gov/signup/> and store your key with
-#' [set_nims_key()]. The key is read from the `API_USGS_PAT` environment
+#' [set_usgs_api_key()]. The key is read from the `API_USGS_PAT` environment
 #' variable, the same variable used by `dataRetrieval`.
 #'
 #' @keywords internal

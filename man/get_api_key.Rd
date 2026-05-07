@@ -11,6 +11,6 @@ A single character string, or \code{NULL} if the variable is unset.
 }
 \description{
 Reads \code{API_USGS_PAT} from the environment. Returns \code{NULL} (not \code{""}) when
-unset, following the same convention as \code{dataRetrieval}.
+unset, following the same convention as \link[dataRetrieval:dataRetrieval]{dataRetrieval}.
 }
 \keyword{internal}

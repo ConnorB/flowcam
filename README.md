@@ -33,7 +33,7 @@ pak::pak("ConnorB/flowcam")
 library(flowcam)
 
 # Store your free USGS API key (one-time setup)
-set_nims_key("your_api_key_here")
+set_usgs_api_key("your_api_key_here")
 
 # Find the camera at the Kansas River at Wamego, KS
 cam <- find_cameras(site_id = "06887500")
@@ -77,7 +77,7 @@ make_video(dir = dest, fps = 10, one_per_day = TRUE, output = "kaw.mp4")
 Register for a free key at <https://api.waterdata.usgs.gov/signup/>. Unauthenticated requests work but share a rate-limit pool. Store the key once and it persists across sessions:
 
 ```r
-set_nims_key("your_api_key_here")
+set_usgs_api_key("your_api_key_here")
 ```
 
 `flowcam` uses the same `API_USGS_PAT` environment variable as [`dataRetrieval`](https://doi-usgs.github.io/dataRetrieval/), so one key covers both packages.

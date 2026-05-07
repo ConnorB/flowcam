@@ -15,6 +15,9 @@
 #' get_timelapse_url("WI_Chippewa_River_at_Grand_Ave_at_Eau_Claire")
 #' }
 get_timelapse_url <- function(cam_id) {
+  .nims_enter()
+  on.exit(.nims_exit(), add = TRUE)
+
   if (!is.character(cam_id) || length(cam_id) != 1L || !nzchar(cam_id)) {
     cli::cli_abort("{.arg cam_id} must be a single non-empty character string.")
   }

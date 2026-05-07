@@ -42,9 +42,9 @@ nims_request <- function(endpoint, query = list()) {
     } else {
       body <- httr2::resp_body_string(resp)
       msg <- if (grepl("API_KEY_MISSING", body, fixed = TRUE)) {
-        "API key missing. Register at <https://api.waterdata.usgs.gov/signup/> then call set_nims_key()."
+        "API key missing. Register at <https://api.waterdata.usgs.gov/signup/> then call set_usgs_api_key()."
       } else if (grepl("OVER_RATE_LIMIT", body, fixed = TRUE)) {
-        "Rate limit exceeded. Call set_nims_key() to use an API key, or wait before retrying."
+        "Rate limit exceeded. Call set_usgs_api_key() to use an API key, or wait before retrying."
       } else {
         paste("HTTP", httr2::resp_status(resp), httr2::resp_status_desc(resp))
       }
@@ -55,5 +55,13 @@ nims_request <- function(endpoint, query = list()) {
   req <- httr2::req_timeout(req, seconds = 60)
 
   resp <- httr2::req_perform(req)
+
+  if (!is.null(key)) {
+    remaining <- httr2::resp_header(resp, "x-ratelimit-remaining")
+    if (!is.null(remaining)) {
+      .nims_state$remaining <- remaining
+    }
+  }
+
   httr2::resp_body_json(resp, simplifyVector = FALSE)
 }

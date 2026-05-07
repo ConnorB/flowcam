@@ -81,6 +81,9 @@ list_images <- function(
   raw_item = FALSE,
   site_id = NULL
 ) {
+  .nims_enter()
+  on.exit(.nims_exit(), add = TRUE)
+
   if (!is.null(cam_id) && !is.null(site_id)) {
     cli::cli_abort("Provide {.arg cam_id} or {.arg site_id}, not both.")
   }

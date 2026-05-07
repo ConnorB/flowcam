@@ -5,14 +5,21 @@ Version: 0.1.0.9000
 Authors@R: person("Connor", "Brown", role = c("aut", "cre"),
     email = "ConnorBrown1996@gmail.com",
 	comment = c(ORCID = "0000-0002-9680-8930"))
-Description: Provides functions to query camera metadata, list image filenames,
-    build image URLs, download images, and assemble animated GIFs from the U.S.
-    Geological Survey National Imagery Management System (NIMS) API
-    <https://api.waterdata.usgs.gov/nims/v0>. Integrates with the
-    'dataRetrieval' package <https://doi-usgs.github.io/dataRetrieval/> to
-    enrich camera records with NWIS site metadata. Authentication via the
-    API_USGS_PAT environment variable follows the same convention used by
-    'dataRetrieval'.
+Description: A tidy interface to the U.S. Geological Survey (USGS) National
+    Imagery Management System (NIMS) API
+    (<https://api.waterdata.usgs.gov/docs/nims/overview/>), which stores and serves images
+    collected by stream-gage cameras at monitoring locations across the United
+    States. Provides functions to discover cameras by NWIS site number or
+    camera ID, list and filter available images by date and time, download
+    images at multiple resolutions, and assemble downloaded frames into
+    animated GIFs or MP4 videos. Integrates with the 'dataRetrieval' package
+    (<https://doi-usgs.github.io/dataRetrieval/>) to enrich camera records
+    with watershed metadata (drainage area, hydrologic unit code, state,
+    county) and to retrieve co-located streamflow, stage, or water-quality
+    time series — enabling direct comparison of visual stream conditions with
+    measured observations. API authentication uses the 'API_USGS_PAT'
+    environment variable shared with 'dataRetrieval', so a single key covers
+    both packages.
 License: AGPL (>= 3)
 URL: https://connorb.github.io/flowcam/,
     https://github.com/ConnorB/flowcam,
@@ -25,6 +32,7 @@ Roxygen: list(markdown = TRUE)
 Imports:
     cli (>= 3.0.0),
     httr2 (>= 1.0.0),
+    lifecycle,
     rlang (>= 1.0.0),
     tibble (>= 3.0.0)
 Suggests:
@@ -41,3 +49,4 @@ Suggests:
 VignetteBuilder: quarto
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0.9000
+RoxygenNote: 8.0.0.9000

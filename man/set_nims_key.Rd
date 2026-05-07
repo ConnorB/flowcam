@@ -13,15 +13,15 @@ set_nims_key(key)
 \code{key}, invisibly.
 }
 \description{
-Writes \code{API_USGS_PAT} to \verb{~/.Renviron} and applies it immediately in the
-current session. The same variable is used by the \code{dataRetrieval} package,
-so one key covers both packages.
-}
-\details{
-Register for a free key at \url{https://api.waterdata.usgs.gov/signup/}.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+\code{set_nims_key()} has been renamed to \code{\link[=set_usgs_api_key]{set_usgs_api_key()}} for clarity.
+Please update your code.
 }
 \examples{
 \dontrun{
+# Deprecated: use set_usgs_api_key() instead
 set_nims_key("my_api_key_here")
 }
 }
+\keyword{internal}

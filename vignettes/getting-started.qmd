@@ -27,7 +27,7 @@ library(flowcam)
 
 ## Authentication
 
-NIMS requests work without a key, but unauthenticated traffic shares a rate-limit pool across all users. Register for a free key at <https://api.waterdata.usgs.gov/signup/> and store it once with `set_nims_key()`:
+NIMS requests work without a key, but unauthenticated traffic shares a rate-limit pool across all users. Register for a free key at <https://api.waterdata.usgs.gov/signup/> and store it once with `set_usgs_api_key()`:
 
 ```{r auth}
 set_nims_key("your_api_key_here")

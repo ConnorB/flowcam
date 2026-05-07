@@ -58,6 +58,9 @@ download_images <- function(
   overwrite = FALSE,
   site_id = NULL
 ) {
+  .nims_enter()
+  on.exit(.nims_exit(), add = TRUE)
+
   size <- match.arg(size, c("small", "overlay", "thumb"))
 
   if (!is.null(cam_id) && !is.null(site_id)) {
@@ -112,6 +115,7 @@ download_images <- function(
 
   n <- length(urls)
   downloaded <- character(n)
+  not_found <- character(0L)
 
   cli::cli_progress_bar(
     name = paste0("Downloading ", n, " image", if (n != 1) "s"),
@@ -136,6 +140,10 @@ download_images <- function(
         writeBin(raw, dest)
         downloaded[[i]] <- dest
       },
+      httr2_http_404 = function(e) {
+        not_found <<- c(not_found, filenames[[i]])
+        downloaded[[i]] <<- NA_character_
+      },
       error = function(e) {
         cli::cli_warn(
           "Failed to download {.url {urls[[i]]}}: {conditionMessage(e)}"
@@ -149,12 +157,21 @@ download_images <- function(
 
   cli::cli_progress_done()
 
-  n_ok <- sum(!is.na(downloaded))
-  n_fail <- sum(is.na(downloaded))
-  if (n_fail > 0L) {
-    cli::cli_inform("Downloaded {n_ok} image{?s} ({n_fail} failed).")
-  } else {
-    cli::cli_inform("Downloaded {n_ok} image{?s}.")
+  n_404 <- length(not_found)
+  n_ok  <- sum(!is.na(downloaded))
+  n_err <- sum(is.na(downloaded)) - n_404
+
+  cli::cli_inform("Downloaded {n_ok} image{?s}.")
+
+  if (n_404 > 0L) {
+    # Extract timestamp portion from filenames (strip cam_id prefix and extension)
+    timestamps <- sub("^.*___", "", sub("\\.[^.]+$", "", not_found))
+    names(timestamps) <- rep("x", n_404)
+    cli::cli_inform(c("{n_404} image{?s} not found (HTTP 404):", timestamps))
+  }
+
+  if (n_err > 0L) {
+    cli::cli_inform("{n_err} download{?s} failed with other errors.")
   }
 
   invisible(downloaded)

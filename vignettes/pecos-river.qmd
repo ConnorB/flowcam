@@ -208,6 +208,6 @@ Here is the same 30-day window from the Acme camera for comparison:
 - **Use `"thumb"` for exploration.** Thumbnails are around 200 px tall and much smaller than `"small"` images. Download a thumb set first to verify coverage before switching to `"small"` or `"overlay"`.
 - **Time zones.** All NIMS timestamps are UTC. The `tz` column in the camera metadata records the camera's local IANA time zone if you need to convert for display or `one_per_day` interpretation.
 - **Large downloads.** `"small"` images are roughly 150–300 KB each. A 30-day window at one image per 15 minutes is around 2,900 files (~600 MB). Plan accordingly and use `overwrite = FALSE` to resume safely.
-- **Rate limits.** Unauthenticated requests share a pool across all users. Store an API key with `set_nims_key()` (see `vignette("getting-started")`) to use your personal allocation.
+- **Rate limits.** Unauthenticated requests share a pool across all users. Store an API key with `set_usgs_api_key()` (see `vignette("getting-started")`) to use your personal allocation.
 
 Full function reference: <https://connorb.github.io/flowcam/reference/>

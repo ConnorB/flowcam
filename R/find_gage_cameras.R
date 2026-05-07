@@ -8,7 +8,10 @@
 #'   (e.g. `"05366800"`).
 #'
 #' @return A tibble with all camera columns from [find_cameras()] plus
-#'   additional site metadata columns from `dataRetrieval` where available.
+#'   these site metadata columns when available: `monitoring_location_name`,
+#'   `state_name`, `county_name`, `hydrologic_unit_code`, `drainage_area`
+#'   (total drainage area in square miles), and `altitude` (elevation in feet
+#'   above the stated vertical datum).
 #'
 #' @export
 #'
@@ -17,6 +20,9 @@
 #' find_gage_cameras("05366800")
 #' }
 find_gage_cameras <- function(site_id) {
+  .nims_enter()
+  on.exit(.nims_exit(), add = TRUE)
+
   rlang::check_installed(
     "dataRetrieval",
     reason = "to enrich camera records with NWIS site metadata"
@@ -32,8 +38,10 @@ find_gage_cameras <- function(site_id) {
   }
 
   site_info <- tryCatch(
-    dataRetrieval::read_waterdata_monitoring_location(
-      monitoring_location_id = paste0("USGS-", site_id)
+    .with_usgs_quota(
+      dataRetrieval::read_waterdata_monitoring_location(
+        monitoring_location_id = paste0("USGS-", site_id)
+      )
     ),
     error = function(e) {
       cli::cli_warn(
@@ -52,7 +60,7 @@ find_gage_cameras <- function(site_id) {
 
   enrich_cols <- intersect(
     c("nwisId", "monitoring_location_name", "state_name",
-      "county_name", "hydrologic_unit_code", "drain_area_va", "alt_va"),
+      "county_name", "hydrologic_unit_code", "drainage_area", "altitude"),
     names(site_info)
   )
   site_subset <- site_info[, enrich_cols, drop = FALSE]

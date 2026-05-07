@@ -1,7 +1,7 @@
 Package: flowcam
 Type: Package
 Title: Access USGS Stream Gage Camera Images via the NIMS API
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: person("Connor", "Brown", role = c("aut", "cre"),
     email = "ConnorBrown1996@gmail.com",
 	comment = c(ORCID = "0000-0002-9680-8930"))

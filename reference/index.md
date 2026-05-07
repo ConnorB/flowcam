@@ -10,6 +10,8 @@
   : Query NIMS cameras
 - [`find_gage_cameras()`](https://connorb.github.io/flowcam/reference/find_gage_cameras.md)
   : Query NIMS cameras and enrich with NWIS site metadata
+- [`get_site_streamflow()`](https://connorb.github.io/flowcam/reference/get_site_streamflow.md)
+  : Retrieve streamflow data for a USGS gage
 - [`get_timelapse_url()`](https://connorb.github.io/flowcam/reference/get_timelapse_url.md)
   : Get the timelapse video URL for a camera
 - [`list_images()`](https://connorb.github.io/flowcam/reference/list_images.md)
@@ -18,5 +20,5 @@
   : Assemble camera images into an animated GIF
 - [`make_video()`](https://connorb.github.io/flowcam/reference/make_video.md)
   : Assemble camera images into an MP4 video
-- [`set_nims_key()`](https://connorb.github.io/flowcam/reference/set_nims_key.md)
+- [`set_usgs_api_key()`](https://connorb.github.io/flowcam/reference/set_usgs_api_key.md)
   : Store your USGS API key in .Renviron

@@ -39,7 +39,7 @@ pak::pak("ConnorB/flowcam")
 library(flowcam)
 
 # Store your free USGS API key (one-time setup)
-set_nims_key("your_api_key_here")
+set_usgs_api_key("your_api_key_here")
 
 # Find the camera at the Kansas River at Wamego, KS
 cam <- find_cameras(site_id = "06887500")
@@ -86,7 +86,7 @@ once and it persists across sessions:
 
 ``` r
 
-set_nims_key("your_api_key_here")
+set_usgs_api_key("your_api_key_here")
 ```
 
 `flowcam` uses the same `API_USGS_PAT` environment variable as

@@ -258,7 +258,7 @@ Pecos River near Acme — April 6 to May 5, 2026
   MB). Plan accordingly and use `overwrite = FALSE` to resume safely.
 - **Rate limits.** Unauthenticated requests share a pool across all
   users. Store an API key with
-  [`set_nims_key()`](https://connorb.github.io/flowcam/reference/set_nims_key.md)
+  [`set_usgs_api_key()`](https://connorb.github.io/flowcam/reference/set_usgs_api_key.md)
   (see
   [`vignette("getting-started")`](https://connorb.github.io/flowcam/articles/getting-started.md))
   to use your personal allocation.

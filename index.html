@@ -16,8 +16,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Download and Animate USGS Stream-Gage Camera Images">
-<meta name="description" content="Provides functions to query camera metadata, list image filenames, build image URLs, download images, and assemble animated GIFs from the U.S. Geological Survey National Imagery Management System (NIMS) API &lt;https://api.waterdata.usgs.gov/nims/v0&gt;. Integrates with the dataRetrieval package &lt;https://doi-usgs.github.io/dataRetrieval/&gt; to enrich camera records with NWIS site metadata. Authentication via the API_USGS_PAT environment variable follows the same convention used by dataRetrieval.">
-<meta property="og:description" content="Provides functions to query camera metadata, list image filenames, build image URLs, download images, and assemble animated GIFs from the U.S. Geological Survey National Imagery Management System (NIMS) API &lt;https://api.waterdata.usgs.gov/nims/v0&gt;. Integrates with the dataRetrieval package &lt;https://doi-usgs.github.io/dataRetrieval/&gt; to enrich camera records with NWIS site metadata. Authentication via the API_USGS_PAT environment variable follows the same convention used by dataRetrieval.">
+<meta name="description" content="A tidy interface to the U.S. Geological Survey (USGS) National Imagery Management System (NIMS) API (&lt;https://api.waterdata.usgs.gov/docs/nims/overview/&gt;), which stores and serves images collected by stream-gage cameras at monitoring locations across the United States. Provides functions to discover cameras by NWIS site number or camera ID, list and filter available images by date and time, download images at multiple resolutions, and assemble downloaded frames into animated GIFs or MP4 videos. Integrates with the dataRetrieval package (&lt;https://doi-usgs.github.io/dataRetrieval/&gt;) to enrich camera records with watershed metadata (drainage area, hydrologic unit code, state, county) and to retrieve co-located streamflow, stage, or water-quality time series — enabling direct comparison of visual stream conditions with measured observations. API authentication uses the API_USGS_PAT environment variable shared with dataRetrieval, so a single key covers both packages.">
+<meta property="og:description" content="A tidy interface to the U.S. Geological Survey (USGS) National Imagery Management System (NIMS) API (&lt;https://api.waterdata.usgs.gov/docs/nims/overview/&gt;), which stores and serves images collected by stream-gage cameras at monitoring locations across the United States. Provides functions to discover cameras by NWIS site number or camera ID, list and filter available images by date and time, download images at multiple resolutions, and assemble downloaded frames into animated GIFs or MP4 videos. Integrates with the dataRetrieval package (&lt;https://doi-usgs.github.io/dataRetrieval/&gt;) to enrich camera records with watershed metadata (drainage area, hydrologic unit code, state, county) and to retrieve co-located streamflow, stage, or water-quality time series — enabling direct comparison of visual stream conditions with measured observations. API authentication uses the API_USGS_PAT environment variable shared with dataRetrieval, so a single key covers both packages.">
 <meta property="og:image" content="https://connorb.github.io/flowcam/reference/figures/logo.png">
 <meta property="og:image:alt" content="flowcam — USGS stream-gage timelapses in R">
 <meta name="twitter:card" content="summary_large_image">
@@ -50,6 +50,7 @@
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -104,7 +105,7 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connorb.github.io/flowcam/">flowcam</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Store your free USGS API key (one-time setup)</span></span>
-<span><span class="fu"><a href="reference/set_nims_key.html">set_nims_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/set_usgs_api_key.html">set_usgs_api_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Find the camera at the Kansas River at Wamego, KS</span></span>
 <span><span class="va">cam</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/find_cameras.html">find_cameras</a></span><span class="op">(</span>site_id <span class="op">=</span> <span class="st">"06887500"</span><span class="op">)</span></span>
@@ -177,7 +178,7 @@
 </h2>
 <p>Register for a free key at <a href="https://api.waterdata.usgs.gov/signup/" class="external-link uri">https://api.waterdata.usgs.gov/signup/</a>. Unauthenticated requests work but share a rate-limit pool. Store the key once and it persists across sessions:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/set_nims_key.html">set_nims_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/set_usgs_api_key.html">set_usgs_api_key</a></span><span class="op">(</span><span class="st">"your_api_key_here"</span><span class="op">)</span></span></code></pre></div>
 <p><code>flowcam</code> uses the same <code>API_USGS_PAT</code> environment variable as <a href="https://doi-usgs.github.io/dataRetrieval/" class="external-link"><code>dataRetrieval</code></a>, so one key covers both packages.</p>
 </div>
 <div class="section level2">

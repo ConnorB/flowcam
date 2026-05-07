@@ -24,8 +24,11 @@ find_gage_cameras(site_id)
 
 A tibble with all camera columns from
 [`find_cameras()`](https://connorb.github.io/flowcam/reference/find_cameras.md)
-plus additional site metadata columns from `dataRetrieval` where
-available.
+plus these site metadata columns when available:
+`monitoring_location_name`, `state_name`, `county_name`,
+`hydrologic_unit_code`, `drainage_area` (total drainage area in square
+miles), and `altitude` (elevation in feet above the stated vertical
+datum).
 
 ## Examples
 

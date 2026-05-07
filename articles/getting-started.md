@@ -19,7 +19,7 @@ library(flowcam)
 NIMS requests work without a key, but unauthenticated traffic shares a
 rate-limit pool across all users. Register for a free key at
 <https://api.waterdata.usgs.gov/signup/> and store it once with
-[`set_nims_key()`](https://connorb.github.io/flowcam/reference/set_nims_key.md):
+[`set_usgs_api_key()`](https://connorb.github.io/flowcam/reference/set_usgs_api_key.md):
 
 ``` r
 

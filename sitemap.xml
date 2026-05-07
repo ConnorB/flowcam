@@ -8,6 +8,7 @@
 <url><loc>https://connorb.github.io/flowcam/index.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/news/index.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/build_image_url.html</loc></url>
+<url><loc>https://connorb.github.io/flowcam/reference/dot-build_dr_time.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/dot-parse_nims_ts.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/download_images.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/find_cameras.html</loc></url>
@@ -15,6 +16,7 @@
 <url><loc>https://connorb.github.io/flowcam/reference/flowcam-package.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/format_datetime.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/get_api_key.html</loc></url>
+<url><loc>https://connorb.github.io/flowcam/reference/get_site_streamflow.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/get_timelapse_url.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/index.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/list_images.html</loc></url>
@@ -25,5 +27,6 @@
 <url><loc>https://connorb.github.io/flowcam/reference/parse_cameras.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/parse_time_arg.html</loc></url>
 <url><loc>https://connorb.github.io/flowcam/reference/set_nims_key.html</loc></url>
+<url><loc>https://connorb.github.io/flowcam/reference/set_usgs_api_key.html</loc></url>
 </urlset>
 

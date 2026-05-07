@@ -1,8 +1,10 @@
 # Store your USGS API key in .Renviron
 
-Writes `API_USGS_PAT` to `~/.Renviron` and applies it immediately in the
-current session. The same variable is used by the `dataRetrieval`
-package, so one key covers both packages.
+**\[deprecated\]**
+
+`set_nims_key()` has been renamed to
+[`set_usgs_api_key()`](https://connorb.github.io/flowcam/reference/set_usgs_api_key.md)
+for clarity. Please update your code.
 
 ## Usage
 
@@ -20,14 +22,11 @@ set_nims_key(key)
 
 `key`, invisibly.
 
-## Details
-
-Register for a free key at <https://api.waterdata.usgs.gov/signup/>.
-
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
+# Deprecated: use set_usgs_api_key() instead
 set_nims_key("my_api_key_here")
 } # }
 ```

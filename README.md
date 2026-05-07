@@ -1,4 +1,4 @@
-# flowcam
+# flowcam <a href="https://connorb.github.io/flowcam/"><img src="man/figures/logo.svg" align="right" height="138" alt="flowcam website" /></a>
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)

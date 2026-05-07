@@ -3,12 +3,19 @@ authors:
   Connor Brown:
     href: https://connorb.github.io/
 template:
+  includes:
+    in_header: |
+      <meta property="og:type" content="website" />
   light-switch: true
   bootstrap: 5
   opengraph:
     image:
       src: man/figures/logo.png
-      alt: "flowcam package logo"
+      alt: "flowcam — USGS stream-gage timelapses in R"
+    twitter:
+      creator: "@eco_conn"
+      site: "@eco_conn"
+      card: summary_large_image
 navbar:
   structure:
     left:

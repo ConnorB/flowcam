@@ -35,6 +35,7 @@ Useful links:
 \itemize{
   \item \url{https://connorb.github.io/flowcam/}
   \item \url{https://github.com/ConnorB/flowcam}
+  \item \url{https://connorb.r-universe.dev/flowcam}
   \item Report bugs at \url{https://github.com/ConnorB/flowcam/issues}
 }
 

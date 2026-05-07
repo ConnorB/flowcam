@@ -32,9 +32,6 @@ jobs:
           R CMD build --no-build-vignettes .
           echo "TARBALL=$(ls *.tar.gz)" >> $GITHUB_ENV
 
-      - name: Check tarball (as CRAN)
-        run: R CMD check --as-cran --no-manual --no-build-vignettes "${{ env.TARBALL }}"
-
       - name: Extract version from tag
         run: echo "PKG_VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 

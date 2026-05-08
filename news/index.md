@@ -51,6 +51,38 @@
   a `data_types` list-column with available time series from
   [`get_site_data_availability()`](https://connorb.github.io/flowcam/reference/get_site_data_availability.md).
 
+### Bug fixes and improvements
+
+- [`build_image_url()`](https://connorb.github.io/flowcam/reference/build_image_url.md)
+  now errors immediately when `camera_row` has more than one row, rather
+  than silently using the first row.
+- [`find_cameras()`](https://connorb.github.io/flowcam/reference/find_cameras.md)
+  now warns when a `lat` or `lng` value cannot be coerced to numeric,
+  instead of producing a silent `NA`.
+- [`get_flow_statistics()`](https://connorb.github.io/flowcam/reference/get_flow_statistics.md)
+  now warns when `percentile` or `sample_count` values cannot be coerced
+  to integer, instead of silently producing `NA`.
+- [`get_site_field_measurements()`](https://connorb.github.io/flowcam/reference/get_site_field_measurements.md),
+  [`get_site_streamflow()`](https://connorb.github.io/flowcam/reference/get_site_streamflow.md),
+  and
+  [`get_flow_statistics()`](https://connorb.github.io/flowcam/reference/get_flow_statistics.md)
+  now validate that `parameter_code` values are five-digit character
+  strings (e.g. `"00060"`), matching the existing validation in
+  [`get_site_streamflow()`](https://connorb.github.io/flowcam/reference/get_site_streamflow.md).
+- [`get_site_data_availability()`](https://connorb.github.io/flowcam/reference/get_site_data_availability.md)
+  and
+  [`get_site_field_measurements()`](https://connorb.github.io/flowcam/reference/get_site_field_measurements.md)
+  now share the same `parameter_code` validation as the other
+  dataRetrieval functions.
+- [`get_timelapse_url()`](https://connorb.github.io/flowcam/reference/get_timelapse_url.md)
+  now returns `NULL` invisibly (instead of an unusable URL) when
+  timelapse is not enabled for a camera, while still issuing a warning.
+- [`make_gif()`](https://connorb.github.io/flowcam/reference/make_gif.md)
+  /
+  [`make_video()`](https://connorb.github.io/flowcam/reference/make_video.md)
+  now warn when local image files have unparseable timestamps and will
+  be excluded from time filtering.
+
 ## flowcam 0.1.0
 
 ### Initial release

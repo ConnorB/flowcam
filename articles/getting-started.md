@@ -23,7 +23,7 @@ rate-limit pool across all users. Register for a free key at
 
 ``` r
 
-set_nims_key("your_api_key_here")
+set_usgs_api_key("your_api_key_here")
 ```
 
 This writes `API_USGS_PAT` to `~/.Renviron` and applies it to the

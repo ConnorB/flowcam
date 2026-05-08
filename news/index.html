@@ -65,6 +65,23 @@
 <li>
 <code><a href="../reference/find_gage_cameras.html">find_gage_cameras()</a></code> gains an <code>include_availability</code> argument (default <code>TRUE</code>) that appends a <code>data_types</code> list-column with available time series from <code><a href="../reference/get_site_data_availability.html">get_site_data_availability()</a></code>.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-and-improvements-0-1-0-9000">Bug fixes and improvements<a class="anchor" aria-label="anchor" href="#bug-fixes-and-improvements-0-1-0-9000"></a></h3>
+<ul><li>
+<code><a href="../reference/build_image_url.html">build_image_url()</a></code> now errors immediately when <code>camera_row</code> has more than one row, rather than silently using the first row.</li>
+<li>
+<code><a href="../reference/find_cameras.html">find_cameras()</a></code> now warns when a <code>lat</code> or <code>lng</code> value cannot be coerced to numeric, instead of producing a silent <code>NA</code>.</li>
+<li>
+<code><a href="../reference/get_flow_statistics.html">get_flow_statistics()</a></code> now warns when <code>percentile</code> or <code>sample_count</code> values cannot be coerced to integer, instead of silently producing <code>NA</code>.</li>
+<li>
+<code><a href="../reference/get_site_field_measurements.html">get_site_field_measurements()</a></code>, <code><a href="../reference/get_site_streamflow.html">get_site_streamflow()</a></code>, and <code><a href="../reference/get_flow_statistics.html">get_flow_statistics()</a></code> now validate that <code>parameter_code</code> values are five-digit character strings (e.g. <code>"00060"</code>), matching the existing validation in <code><a href="../reference/get_site_streamflow.html">get_site_streamflow()</a></code>.</li>
+<li>
+<code><a href="../reference/get_site_data_availability.html">get_site_data_availability()</a></code> and <code><a href="../reference/get_site_field_measurements.html">get_site_field_measurements()</a></code> now share the same <code>parameter_code</code> validation as the other dataRetrieval functions.</li>
+<li>
+<code><a href="../reference/get_timelapse_url.html">get_timelapse_url()</a></code> now returns <code>NULL</code> invisibly (instead of an unusable URL) when timelapse is not enabled for a camera, while still issuing a warning.</li>
+<li>
+<code><a href="../reference/make_gif.html">make_gif()</a></code> / <code><a href="../reference/make_video.html">make_video()</a></code> now warn when local image files have unparseable timestamps and will be excluded from time filtering.</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="flowcam-010">flowcam 0.1.0<a class="anchor" aria-label="anchor" href="#flowcam-010"></a></h2>

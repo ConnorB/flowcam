@@ -29,13 +29,15 @@ test_that("find_cameras() collapses return_fields vector to comma string", {
 })
 
 test_that("find_gage_cameras() errors without dataRetrieval installed", {
-  skip_if(requireNamespace("dataRetrieval", quietly = TRUE),
-          "dataRetrieval is installed; skipping absence test")
+  skip_if(
+    requireNamespace("dataRetrieval", quietly = TRUE),
+    "dataRetrieval is installed; skipping absence test"
+  )
   expect_error(find_gage_cameras("05366800"), "dataRetrieval")
 })
 
 test_that("find_gage_cameras() validates site_id format", {
   expect_error(find_gage_cameras("not-a-site-id"), "8-15 digits")
-  expect_error(find_gage_cameras("1234567"),        "8-15 digits")  # too short
-  expect_error(find_gage_cameras(12345678),          "single non-empty")  # not char
+  expect_error(find_gage_cameras("1234567"), "8-15 digits") # too short
+  expect_error(find_gage_cameras(12345678), "single non-empty") # not char
 })

@@ -15,8 +15,14 @@ test_that("format_datetime() returns NULL for NULL input", {
 })
 
 test_that("format_datetime() passes through character strings unchanged", {
-  expect_equal(flowcam:::format_datetime("2026-01-01T00:00:00"), "2026-01-01T00:00:00")
-  expect_equal(flowcam:::format_datetime("2025-12-31T00-00-00Z"), "2025-12-31T00-00-00Z")
+  expect_equal(
+    flowcam:::format_datetime("2026-01-01T00:00:00"),
+    "2026-01-01T00:00:00"
+  )
+  expect_equal(
+    flowcam:::format_datetime("2025-12-31T00-00-00Z"),
+    "2025-12-31T00-00-00Z"
+  )
 })
 
 test_that("format_datetime() converts POSIXct to ISO 8601 UTC string", {

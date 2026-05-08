@@ -50,8 +50,8 @@
 #'                              parameter_code = avail$parameter_code[1])
 #' }
 get_site_data_availability <- function(
-  site_id        = NULL,
-  cam_id         = NULL,
+  site_id = NULL,
+  cam_id = NULL,
   parameter_code = NA_character_
 ) {
   .nims_enter()
@@ -62,16 +62,18 @@ get_site_data_availability <- function(
     reason = "to retrieve time series metadata from the USGS Water Data API"
   )
 
-  ids     <- .resolve_site_id(site_id, cam_id)
+  validate_parameter_code(parameter_code)
+
+  ids <- .resolve_site_id(site_id, cam_id)
   site_id <- ids$site_id
-  ml_id   <- ids$ml_id
+  ml_id <- ids$ml_id
 
   raw <- tryCatch(
     .with_usgs_quota(
       dataRetrieval::read_waterdata_ts_meta(
         monitoring_location_id = ml_id,
-        parameter_code         = parameter_code,
-        properties             = c(
+        parameter_code = parameter_code,
+        properties = c(
           "monitoring_location_id",
           "parameter_code",
           "parameter_name",
@@ -96,26 +98,26 @@ get_site_data_availability <- function(
 
   if (nrow(raw) == 0L) {
     return(tibble::tibble(
-      site_id        = character(),
+      site_id = character(),
       parameter_code = character(),
       parameter_name = character(),
       unit_of_measure = character(),
-      begin_utc      = as.POSIXct(character(), tz = "UTC"),
-      end_utc        = as.POSIXct(character(), tz = "UTC"),
-      statistic_id   = character(),
+      begin_utc = as.POSIXct(character(), tz = "UTC"),
+      end_utc = as.POSIXct(character(), tz = "UTC"),
+      statistic_id = character(),
       time_series_id = character()
     ))
   }
 
   out <- tibble::tibble(
-    site_id         = sub("^USGS-", "", raw$monitoring_location_id),
-    parameter_code  = raw$parameter_code,
-    parameter_name  = raw$parameter_name,
+    site_id = sub("^USGS-", "", raw$monitoring_location_id),
+    parameter_code = raw$parameter_code,
+    parameter_name = raw$parameter_name,
     unit_of_measure = raw$unit_of_measure,
-    begin_utc       = raw$begin_utc,
-    end_utc         = raw$end_utc,
-    statistic_id    = raw$statistic_id,
-    time_series_id  = raw$time_series_id
+    begin_utc = raw$begin_utc,
+    end_utc = raw$end_utc,
+    statistic_id = raw$statistic_id,
+    time_series_id = raw$time_series_id
   )
 
   out[order(out$parameter_code), ]

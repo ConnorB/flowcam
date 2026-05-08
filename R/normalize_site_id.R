@@ -27,6 +27,34 @@ normalize_site_id <- function(site_id, arg_name = "site_id") {
   site_id
 }
 
+#' Validate a parameter_code argument
+#'
+#' `NULL` or a single `NA` means "no filter" (all parameters). Otherwise,
+#' all values must be exactly 5-digit character strings.
+#'
+#' @param parameter_code The value to validate.
+#' @return `parameter_code`, invisibly.
+#' @keywords internal
+validate_parameter_code <- function(parameter_code) {
+  if (is.null(parameter_code)) {
+    return(invisible(NULL))
+  }
+  if (length(parameter_code) == 1L && is.na(parameter_code)) {
+    return(invisible(parameter_code))
+  }
+  if (
+    !is.character(parameter_code) ||
+      length(parameter_code) < 1L ||
+      !all(grepl("^\\d{5}$", parameter_code))
+  ) {
+    cli::cli_abort(
+      "{.arg parameter_code} must be one or more 5-digit character strings \\
+       (e.g. {.val 00060}), or {.code NULL} to return all parameters."
+    )
+  }
+  invisible(parameter_code)
+}
+
 #' Resolve a site_id/cam_id pair to a normalised site ID and ml_id
 #'
 #' Accepts exactly one of `site_id` or `cam_id`, validates it, and returns a

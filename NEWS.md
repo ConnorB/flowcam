@@ -33,6 +33,26 @@
   `TRUE`) that appends a `data_types` list-column with available time series
   from `get_site_data_availability()`.
 
+## Bug fixes and improvements
+
+* `build_image_url()` now errors immediately when `camera_row` has more than
+  one row, rather than silently using the first row.
+* `find_cameras()` now warns when a `lat` or `lng` value cannot be coerced to
+  numeric, instead of producing a silent `NA`.
+* `get_flow_statistics()` now warns when `percentile` or `sample_count` values
+  cannot be coerced to integer, instead of silently producing `NA`.
+* `get_site_field_measurements()`, `get_site_streamflow()`, and
+  `get_flow_statistics()` now validate that `parameter_code` values are
+  five-digit character strings (e.g. `"00060"`), matching the existing
+  validation in `get_site_streamflow()`.
+* `get_site_data_availability()` and `get_site_field_measurements()` now share
+  the same `parameter_code` validation as the other dataRetrieval functions.
+* `get_timelapse_url()` now returns `NULL` invisibly (instead of an unusable
+  URL) when timelapse is not enabled for a camera, while still issuing a
+  warning.
+* `make_gif()` / `make_video()` now warn when local image files have
+  unparseable timestamps and will be excluded from time filtering.
+
 # flowcam 0.1.0
 
 ## Initial release

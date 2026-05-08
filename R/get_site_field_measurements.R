@@ -61,9 +61,9 @@
 #' sensor <- get_site_streamflow("05366800", time = "P2Y")
 #' }
 get_site_field_measurements <- function(
-  site_id        = NULL,
-  cam_id         = NULL,
-  time           = NULL,
+  site_id = NULL,
+  cam_id = NULL,
+  time = NULL,
   parameter_code = "00060"
 ) {
   .nims_enter()
@@ -74,20 +74,22 @@ get_site_field_measurements <- function(
     reason = "to retrieve field measurements from the USGS Water Data API"
   )
 
-  ids     <- .resolve_site_id(site_id, cam_id)
+  validate_parameter_code(parameter_code)
+
+  ids <- .resolve_site_id(site_id, cam_id)
   site_id <- ids$site_id
-  ml_id   <- ids$ml_id
+  ml_id <- ids$ml_id
 
   pcode_arg <- if (is.null(parameter_code)) NA_character_ else parameter_code
-  dr_time   <- .build_dr_time(time)
+  dr_time <- .build_dr_time(time)
 
   raw <- tryCatch(
     .with_usgs_quota(
       dataRetrieval::read_waterdata_field_measurements(
         monitoring_location_id = ml_id,
-        parameter_code         = pcode_arg,
-        time                   = dr_time,
-        skipGeometry           = TRUE
+        parameter_code = pcode_arg,
+        time = dr_time,
+        skipGeometry = TRUE
       )
     ),
     error = function(e) {
@@ -102,24 +104,33 @@ get_site_field_measurements <- function(
 
   if (nrow(raw) == 0L) {
     return(tibble::tibble(
-      site_id           = character(),
-      datetime          = as.POSIXct(character(), tz = "UTC"),
-      value             = numeric(),
-      unit              = character(),
-      parameter_code    = character(),
-      approval_status   = character(),
+      site_id = character(),
+      datetime = as.POSIXct(character(), tz = "UTC"),
+      value = numeric(),
+      unit = character(),
+      parameter_code = character(),
+      approval_status = character(),
       measurement_rated = character(),
       control_condition = character()
     ))
   }
 
   tibble::tibble(
-    site_id           = sub("^USGS-", "", raw$monitoring_location_id),
-    datetime          = raw$time,
-    value             = suppressWarnings(as.numeric(raw$value)),
-    unit              = raw$unit_of_measure,
-    parameter_code    = raw$parameter_code,
-    approval_status   = raw$approval_status,
+    site_id = sub("^USGS-", "", raw$monitoring_location_id),
+    datetime = raw$time,
+    value = {
+      v <- suppressWarnings(as.numeric(raw$value))
+      if (any(is.na(v) & !is.na(raw$value))) {
+        cli::cli_warn(
+          "Some {.field value} entries could not be coerced to numeric and \\
+           were set to {.code NA}."
+        )
+      }
+      v
+    },
+    unit = raw$unit_of_measure,
+    parameter_code = raw$parameter_code,
+    approval_status = raw$approval_status,
     measurement_rated = raw$measurement_rated,
     control_condition = raw$control_condition
   )

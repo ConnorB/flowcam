@@ -38,12 +38,16 @@ format_datetime <- function(dt, arg_name = deparse(substitute(dt))) {
 #'   unparseable.
 #' @keywords internal
 .parse_nims_ts <- function(ts) {
-  if (is.null(ts) || !nzchar(ts)) return(NULL)
-  s <- sub("^(\\d{4}-\\d{2}-\\d{2})T(\\d{2})-(\\d{2})-(\\d{2})Z?$",
-           "\\1 \\2:\\3:\\4", ts)
+  if (is.null(ts) || !nzchar(ts)) {
+    return(NULL)
+  }
+  s <- sub(
+    "^(\\d{4}-\\d{2}-\\d{2})T(\\d{2})-(\\d{2})-(\\d{2})Z?$",
+    "\\1 \\2:\\3:\\4",
+    ts
+  )
   if (s == ts) {
-    s <- sub("^(\\d{4}-\\d{2}-\\d{2})T(\\d{2}:\\d{2}:\\d{2})Z?$",
-             "\\1 \\2", ts)
+    s <- sub("^(\\d{4}-\\d{2}-\\d{2})T(\\d{2}:\\d{2}:\\d{2})Z?$", "\\1 \\2", ts)
   }
   r <- tryCatch(as.POSIXct(s, tz = "UTC"), error = function(e) NULL)
   if (!is.null(r) && !is.na(r)) r else NULL

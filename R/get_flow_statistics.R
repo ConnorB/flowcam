@@ -99,6 +99,8 @@ get_flow_statistics <- function(
 
   type <- rlang::arg_match(type)
 
+  validate_parameter_code(parameter_code)
+
   ids <- .resolve_site_id(site_id, cam_id)
   site_id <- ids$site_id
   ml_id <- ids$ml_id
@@ -146,15 +148,30 @@ get_flow_statistics <- function(
       )
     }
 
+    percentile_int <- suppressWarnings(as.integer(raw$percentile))
+    if (any(is.na(percentile_int) & !is.na(raw$percentile))) {
+      cli::cli_warn(
+        "Some {.field percentile} values could not be coerced to integer and \\
+         were set to {.code NA}."
+      )
+    }
+    sample_count_int <- suppressWarnings(as.integer(raw$sample_count))
+    if (any(is.na(sample_count_int) & !is.na(raw$sample_count))) {
+      cli::cli_warn(
+        "Some {.field sample_count} values could not be coerced to integer and \\
+         were set to {.code NA}."
+      )
+    }
+
     tibble::tibble(
       site_id = sub("^USGS-", "", raw$monitoring_location_id),
       parameter_code = raw$parameter_code,
       unit_of_measure = raw$unit_of_measure,
       month_day = month_day,
       computation = raw$computation,
-      percentile = suppressWarnings(as.integer(raw$percentile)),
+      percentile = percentile_int,
       value = raw$value,
-      sample_count = suppressWarnings(as.integer(raw$sample_count))
+      sample_count = sample_count_int
     )
   } else {
     dr_time <- .build_dr_time(time)
@@ -197,17 +214,32 @@ get_flow_statistics <- function(
 
     raw <- sf::st_drop_geometry(raw)
 
+    percentile_int <- suppressWarnings(as.integer(raw$percentile))
+    if (any(is.na(percentile_int) & !is.na(raw$percentile))) {
+      cli::cli_warn(
+        "Some {.field percentile} values could not be coerced to integer and \\
+         were set to {.code NA}."
+      )
+    }
+    sample_count_int <- suppressWarnings(as.integer(raw$sample_count))
+    if (any(is.na(sample_count_int) & !is.na(raw$sample_count))) {
+      cli::cli_warn(
+        "Some {.field sample_count} values could not be coerced to integer and \\
+         were set to {.code NA}."
+      )
+    }
+
     tibble::tibble(
       site_id = sub("^USGS-", "", raw$monitoring_location_id),
       parameter_code = raw$parameter_code,
       unit_of_measure = raw$unit_of_measure,
       interval_type = raw$interval_type,
-      start_date = suppressWarnings(as.Date(raw$start_date)),
-      end_date = suppressWarnings(as.Date(raw$end_date)),
+      start_date = as.Date(raw$start_date),
+      end_date = as.Date(raw$end_date),
       computation = raw$computation,
-      percentile = suppressWarnings(as.integer(raw$percentile)),
+      percentile = percentile_int,
       value = raw$value,
-      sample_count = suppressWarnings(as.integer(raw$sample_count))
+      sample_count = sample_count_int
     )
   }
 }

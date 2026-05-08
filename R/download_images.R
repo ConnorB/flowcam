@@ -158,7 +158,7 @@ download_images <- function(
   cli::cli_progress_done()
 
   n_404 <- length(not_found)
-  n_ok  <- sum(!is.na(downloaded))
+  n_ok <- sum(!is.na(downloaded))
   n_err <- sum(is.na(downloaded)) - n_404
 
   cli::cli_inform("Downloaded {n_ok} image{?s}.")

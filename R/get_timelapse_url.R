@@ -6,7 +6,8 @@
 #'
 #' @param cam_id Character. Camera identifier.
 #'
-#' @return A single character string with the full timelapse video URL.
+#' @return A single character string with the full timelapse video URL, or
+#'   `NULL` (invisibly) if timelapse is not enabled for the camera.
 #'
 #' @export
 #'
@@ -30,7 +31,10 @@ get_timelapse_url <- function(cam_id) {
 
   tl_enabled <- cam[["TL_enabled"]][[1L]]
   if (!isTRUE(tl_enabled)) {
-    cli::cli_warn("Camera {.val {cam_id}} does not have timelapse enabled.")
+    cli::cli_warn(
+      "Camera {.val {cam_id}} does not have timelapse enabled; returning {.code NULL}."
+    )
+    return(invisible(NULL))
   }
 
   tl_dir <- cam[["tlDir"]][[1L]]

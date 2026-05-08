@@ -55,8 +55,8 @@ find_cameras <- function(site_id = NULL, cam_id = NULL, return_fields = NULL) {
   result <- nims_request(
     "/cameras",
     query = list(
-      siteId       = site_id,
-      camId        = cam_id,
+      siteId = site_id,
+      camId = cam_id,
       returnFields = return_fields
     )
   )
@@ -75,8 +75,11 @@ parse_cameras <- function(result) {
   }
 
   datetime_cols <- c(
-    "createdDate", "modifiedDate", "newestImageDT",
-    "TL_lastGeneratedDT", "TL_lastImageUsedDT"
+    "createdDate",
+    "modifiedDate",
+    "newestImageDT",
+    "TL_lastGeneratedDT",
+    "TL_lastImageUsedDT"
   )
 
   rows <- lapply(result, function(cam) {
@@ -91,14 +94,26 @@ parse_cameras <- function(result) {
     # Coerce lat/lng from string to numeric
     for (col in c("lat", "lng")) {
       if (col %in% names(row)) {
-        row[[col]] <- suppressWarnings(as.numeric(row[[col]]))
+        orig <- row[[col]]
+        coerced <- suppressWarnings(as.numeric(orig))
+        if (!is.na(orig) && is.na(coerced)) {
+          cli::cli_warn(
+            "Could not parse {.field {col}} value {.val {orig}} as numeric; \\
+             set to {.code NA}."
+          )
+        }
+        row[[col]] <- coerced
       }
     }
 
     # Coerce datetime strings to POSIXct UTC
     for (col in datetime_cols) {
       if (col %in% names(row) && !is.na(row[[col]])) {
-        row[[col]] <- as.POSIXct(row[[col]], format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC")
+        row[[col]] <- as.POSIXct(
+          row[[col]],
+          format = "%Y-%m-%dT%H:%M:%OSZ",
+          tz = "UTC"
+        )
       }
     }
 
@@ -111,7 +126,9 @@ parse_cameras <- function(result) {
   all_cols <- unique(unlist(lapply(rows, names)))
   rows <- lapply(rows, function(row) {
     missing <- setdiff(all_cols, names(row))
-    for (col in missing) row[[col]] <- NA
+    for (col in missing) {
+      row[[col]] <- NA
+    }
     row[all_cols]
   })
 

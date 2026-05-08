@@ -65,11 +65,22 @@ find_gage_cameras <- function(site_id, include_availability = TRUE) {
 
   if (!is.null(site_info) && nrow(site_info) > 0L) {
     # Strip "USGS-" prefix so the join key matches cameras$nwisId
-    site_info[["nwisId"]] <- sub("^USGS-", "", site_info[["monitoring_location_id"]])
+    site_info[["nwisId"]] <- sub(
+      "^USGS-",
+      "",
+      site_info[["monitoring_location_id"]]
+    )
 
     enrich_cols <- intersect(
-      c("nwisId", "monitoring_location_name", "state_name",
-        "county_name", "hydrologic_unit_code", "drainage_area", "altitude"),
+      c(
+        "nwisId",
+        "monitoring_location_name",
+        "state_name",
+        "county_name",
+        "hydrologic_unit_code",
+        "drainage_area",
+        "altitude"
+      ),
       names(site_info)
     )
     site_subset <- site_info[, enrich_cols, drop = FALSE]

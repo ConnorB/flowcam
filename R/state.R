@@ -2,7 +2,7 @@
 # Using an environment so values can be updated in place without <<-.
 .nims_state <- new.env(parent = emptyenv())
 .nims_state$remaining <- NULL
-.nims_state$depth     <- 0L
+.nims_state$depth <- 0L
 
 # Called at the top of every exported function that touches the NIMS API.
 .nims_enter <- function() {

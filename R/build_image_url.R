@@ -37,6 +37,12 @@ build_image_url <- function(
     thumb = "thumbDir"
   )
 
+  if (is.data.frame(camera_row) && nrow(camera_row) != 1L) {
+    cli::cli_abort(
+      "{.arg camera_row} must be a single-row tibble, not {nrow(camera_row)} rows."
+    )
+  }
+
   if (!dir_col %in% names(camera_row)) {
     cli::cli_abort(
       "{.field {dir_col}} not found in {.arg camera_row}. \\

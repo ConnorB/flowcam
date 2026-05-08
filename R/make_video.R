@@ -93,7 +93,13 @@ make_video <- function(
   # mod() uses commas which ffmpeg's filtergraph parser treats as separators.
   vfilter <- "scale=trunc(iw/2)*2:trunc(ih/2)*2"
 
-  av::av_encode_video(paths, output, framerate = fps, vfilter = vfilter, verbose = FALSE)
+  av::av_encode_video(
+    paths,
+    output,
+    framerate = fps,
+    vfilter = vfilter,
+    verbose = FALSE
+  )
 
   cli::cli_alert_success("Video written to {.path {output}}.")
   invisible(output)

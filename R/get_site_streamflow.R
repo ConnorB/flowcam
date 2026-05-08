@@ -97,17 +97,9 @@ get_site_streamflow <- function(
 
   ids <- .resolve_site_id(site_id, cam_id)
   site_id <- ids$site_id
-  ml_id   <- ids$ml_id
+  ml_id <- ids$ml_id
 
-  if (
-    !is.character(parameter_code) ||
-      length(parameter_code) < 1L ||
-      !all(grepl("^\\d{5}$", parameter_code))
-  ) {
-    cli::cli_abort(
-      "{.arg parameter_code} must be one or more 5-digit character strings (e.g. {.val 00060})."
-    )
-  }
+  validate_parameter_code(parameter_code)
 
   dr_time <- .build_dr_time(time)
 
@@ -158,14 +150,25 @@ get_site_streamflow <- function(
       parameter_code = character(),
       approval_status = character()
     )
-    if (water_year) out$water_year <- integer()
+    if (water_year) {
+      out$water_year <- integer()
+    }
     return(out)
   }
 
   out <- tibble::tibble(
     site_id = sub("^USGS-", "", raw$monitoring_location_id),
     datetime = raw$time,
-    value = suppressWarnings(as.numeric(raw$value)),
+    value = {
+      v <- suppressWarnings(as.numeric(raw$value))
+      if (any(is.na(v) & !is.na(raw$value))) {
+        cli::cli_warn(
+          "Some {.field value} entries could not be coerced to numeric and \\
+           were set to {.code NA}."
+        )
+      }
+      v
+    },
     unit = raw$unit_of_measure,
     parameter_code = raw$parameter_code,
     approval_status = raw$approval_status

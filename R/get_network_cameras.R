@@ -50,9 +50,9 @@
 #' )
 #' }
 get_network_cameras <- function(
-  site_id     = NULL,
-  cam_id      = NULL,
-  direction   = c("upstream", "downstream", "both"),
+  site_id = NULL,
+  cam_id = NULL,
+  direction = c("upstream", "downstream", "both"),
   distance_km = 100
 ) {
   .nims_enter()
@@ -65,23 +65,23 @@ get_network_cameras <- function(
 
   direction <- rlang::arg_match(direction)
 
-  ids     <- .resolve_site_id(site_id, cam_id)
+  ids <- .resolve_site_id(site_id, cam_id)
   site_id <- ids$site_id
 
   nav_codes <- switch(
     direction,
-    upstream   = "UT",
+    upstream = "UT",
     downstream = "DM",
-    both       = c("UT", "DM")
+    both = c("UT", "DM")
   )
 
   nldi_result <- tryCatch(
     dataRetrieval::findNLDI(
-      nwis        = site_id,
-      nav         = nav_codes,
-      find        = "nwis",
+      nwis = site_id,
+      nav = nav_codes,
+      find = "nwis",
       distance_km = distance_km,
-      warn        = FALSE
+      warn = FALSE
     ),
     error = function(e) {
       cli::cli_abort(
@@ -100,21 +100,28 @@ get_network_cameras <- function(
 
   discovered <- lapply(names(nldi_result), function(nm) {
     df <- nldi_result[[nm]]
-    if (is.null(df) || nrow(df) == 0L) return(NULL)
+    if (is.null(df) || nrow(df) == 0L) {
+      return(NULL)
+    }
 
     if (nm == "origin") {
-      site_ids  <- sub("^USGS-", "", df$identifier)
+      site_ids <- sub("^USGS-", "", df$identifier)
       direction <- rep("origin", length(site_ids))
     } else {
       # Key format: "<NAVCODE>_nwissite"
-      nav_code  <- sub("_.*$", "", nm)
+      nav_code <- sub("_.*$", "", nm)
       dir_label <- dir_map[nav_code]
-      if (is.na(dir_label)) return(NULL)
-      site_ids  <- sub("^USGS-", "", df$identifier)
+      if (is.na(dir_label)) {
+        return(NULL)
+      }
+      site_ids <- sub("^USGS-", "", df$identifier)
       direction <- rep(dir_label, length(site_ids))
     }
-    data.frame(site_id = site_ids, direction = direction,
-               stringsAsFactors = FALSE)
+    data.frame(
+      site_id = site_ids,
+      direction = direction,
+      stringsAsFactors = FALSE
+    )
   })
 
   all_sites <- unique(do.call(rbind, Filter(Negate(is.null), discovered)))
@@ -143,23 +150,23 @@ get_network_cameras <- function(
   }
 
   tibble::tibble(
-    site_id   = matched$site_id,
-    cam_id    = matched$camId,
-    cam_name  = matched$camName,
+    site_id = matched$site_id,
+    cam_id = matched$camId,
+    cam_name = matched$camName,
     direction = matched$direction,
-    lat       = matched$lat,
-    lng       = matched$lng
+    lat = matched$lat,
+    lng = matched$lng
   )
 }
 
 #' @keywords internal
 .empty_network_tibble <- function() {
   tibble::tibble(
-    site_id   = character(),
-    cam_id    = character(),
-    cam_name  = character(),
+    site_id = character(),
+    cam_id = character(),
+    cam_name = character(),
     direction = character(),
-    lat       = numeric(),
-    lng       = numeric()
+    lat = numeric(),
+    lng = numeric()
   )
 }

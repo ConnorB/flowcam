@@ -116,6 +116,14 @@
         numeric(1L)
       )
 
+      n_unparsed <- sum(is.na(file_ts))
+      if (n_unparsed > 0L) {
+        cli::cli_warn(
+          "{n_unparsed} image{?s} {?has/have} an unparseable timestamp and \\
+           will be excluded from filtering."
+        )
+      }
+
       keep <- !is.na(file_ts)
 
       if (!is.null(time_range$after)) {

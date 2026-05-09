@@ -10,3 +10,5 @@
 ^vignettes/\.quarto$
 ^index\.md$
 ^LICENSE\.md$
+^[.]?air[.]toml$
+^\.vscode$

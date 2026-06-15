@@ -18,7 +18,8 @@ get_timelapse_url(cam_id)
 
 ## Value
 
-A single character string with the full timelapse video URL.
+A single character string with the full timelapse video URL, or `NULL`
+(invisibly) if timelapse is not enabled for the camera.
 
 ## Examples
 

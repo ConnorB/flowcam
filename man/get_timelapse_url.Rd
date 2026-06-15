@@ -10,7 +10,8 @@ get_timelapse_url(cam_id)
 \item{cam_id}{Character. Camera identifier.}
 }
 \value{
-A single character string with the full timelapse video URL.
+A single character string with the full timelapse video URL, or
+\code{NULL} (invisibly) if timelapse is not enabled for the camera.
 }
 \description{
 Queries the camera's metadata from NIMS and constructs the URL to its

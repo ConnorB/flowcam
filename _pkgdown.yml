@@ -1,11 +1,10 @@
 url: https://connorb.github.io/flowcam/
+
 authors:
   Connor Brown:
     href: https://connorb.github.io/
+
 template:
-  includes:
-    in_header: |
-      <meta property="og:type" content="website" />
   light-switch: true
   bootstrap: 5
   opengraph:
@@ -16,6 +15,21 @@ template:
       creator: "@eco_conn"
       site: "@eco_conn"
       card: summary_large_image
+  bslib:
+    base_font: {google: "Roboto"}
+    heading_font: {google: "Roboto Slab"}
+    code_font: {google: "Fira Code"}
+  includes:
+  in_header: |
+    <meta property="og:type" content="website" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ELB0F4QNPS"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ELB0F4QNPS');
+    </script>
 navbar:
   structure:
     left:
@@ -33,4 +47,3 @@ articles:
   contents:
   - getting-started
   - pecos-river
-

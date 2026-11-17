@@ -1,14 +1,4 @@
-#' Normalise a USGS/NWIS site ID
-#'
-#' Accepts the bare numeric form (`"05366800"`) or the `USGS-` prefixed form
-#' (`"USGS-05366800"`) and returns the plain 8-to-15-digit string expected by
-#' the NIMS API.
-#'
-#' @param site_id A single character string.
-#' @param arg_name Argument name used in error messages.
-#'
-#' @return A plain numeric site ID string.
-#' @keywords internal
+# Normalise a USGS/NWIS site ID to the bare numeric form.
 normalize_site_id <- function(site_id, arg_name = "site_id") {
   if (!is.character(site_id) || length(site_id) != 1L || !nzchar(site_id)) {
     cli::cli_abort(
@@ -27,14 +17,7 @@ normalize_site_id <- function(site_id, arg_name = "site_id") {
   site_id
 }
 
-#' Validate a parameter_code argument
-#'
-#' `NULL` or a single `NA` means "no filter" (all parameters). Otherwise,
-#' all values must be exactly 5-digit character strings.
-#'
-#' @param parameter_code The value to validate.
-#' @return `parameter_code`, invisibly.
-#' @keywords internal
+# Validate one or more five-digit USGS parameter codes.
 validate_parameter_code <- function(parameter_code) {
   if (is.null(parameter_code)) {
     return(invisible(NULL))
@@ -55,17 +38,7 @@ validate_parameter_code <- function(parameter_code) {
   invisible(parameter_code)
 }
 
-#' Resolve a site_id/cam_id pair to a normalised site ID and ml_id
-#'
-#' Accepts exactly one of `site_id` or `cam_id`, validates it, and returns a
-#' named list with the bare NWIS site number and the `USGS-`-prefixed monitoring
-#' location ID required by the Water Data API.
-#'
-#' @param site_id Character or `NULL`.
-#' @param cam_id Character or `NULL`.
-#'
-#' @return A named list: `list(site_id = <chr>, ml_id = <chr>)`.
-#' @keywords internal
+# Resolve a site or camera ID to bare and USGS-prefixed site IDs.
 .resolve_site_id <- function(site_id, cam_id) {
   if (!is.null(site_id) && !is.null(cam_id)) {
     cli::cli_abort("Provide {.arg site_id} or {.arg cam_id}, not both.")

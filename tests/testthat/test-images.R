@@ -1,12 +1,3 @@
-# Helper: single-row camera tibble for CAM123 with known date bounds
-fake_cam123 <- function() {
-  tibble::tibble(
-    camId = "CAM123",
-    createdDate = as.POSIXct("2024-01-01", tz = "UTC"),
-    newestImageDT = as.POSIXct("2026-01-01", tz = "UTC")
-  )
-}
-
 test_that("list_images() errors when cam_id is missing or invalid", {
   expect_error(list_images(), "cam_id")
   expect_error(list_images(""), "cam_id")
@@ -37,9 +28,10 @@ test_that("list_images() errors when time start >= end", {
 })
 
 test_that("list_images() accepts POSIXct time vector", {
+  captured_query <- NULL
   local_mocked_bindings(
-    find_cameras = function(...) fake_cam123(),
-    nims_request = function(...) {
+    nims_request = function(endpoint, query) {
+      captured_query <<- query
       list(
         list(
           camId = "CAM123",
@@ -63,63 +55,12 @@ test_that("list_images() accepts POSIXct time vector", {
   )
   expect_s3_class(result, "tbl_df")
   expect_equal(nrow(result), 2L)
-})
-
-test_that("list_images() clamps both bounds when window is entirely before camera creation", {
-  local_mocked_bindings(
-    find_cameras = function(...) fake_cam123(),
-    nims_request = function(...) list()
-  )
-  expect_message(
-    suppressWarnings(
-      list_images("CAM123", time = c("2020-01-01", "2023-12-31"))
-    ),
-    "Adjusting"
-  )
-})
-
-test_that("list_images() clamps both bounds when window is entirely after newest image", {
-  local_mocked_bindings(
-    find_cameras = function(...) fake_cam123(),
-    nims_request = function(...) list()
-  )
-  expect_message(
-    suppressWarnings(
-      list_images("CAM123", time = c("2026-06-01", "2027-01-01"))
-    ),
-    "Adjusting"
-  )
-})
-
-test_that("list_images() informs and clamps start to createdDate", {
-  local_mocked_bindings(
-    find_cameras = function(...) fake_cam123(),
-    nims_request = function(...) list()
-  )
-  expect_message(
-    suppressWarnings(
-      list_images("CAM123", time = c("2020-01-01", "2025-06-01"))
-    ),
-    "Adjusting"
-  )
-})
-
-test_that("list_images() informs and clamps end to newestImageDT", {
-  local_mocked_bindings(
-    find_cameras = function(...) fake_cam123(),
-    nims_request = function(...) list()
-  )
-  expect_message(
-    suppressWarnings(
-      list_images("CAM123", time = c("2025-01-01", "2027-01-01"))
-    ),
-    "Adjusting"
-  )
+  expect_equal(captured_query$after, "2025-12-01T00:00:00")
+  expect_equal(captured_query$before, "2026-01-01T00:00:00")
 })
 
 test_that("list_images() warns when API returns no images", {
   local_mocked_bindings(
-    find_cameras = function(...) fake_cam123(),
     nims_request = function(...) list()
   )
   expect_warning(
@@ -236,19 +177,11 @@ test_that("list_images() reverses order when recent = TRUE", {
 })
 
 test_that("list_images() empty result produces tibble with correct schema", {
-  # Test the empty-result tibble shapes directly without HTTP
-  r_files <- tibble::tibble(filename = character())
-  expect_named(r_files, "filename")
-  expect_equal(nrow(r_files), 0L)
-
-  r_raw <- tibble::tibble(
-    camId = character(),
-    filename = character(),
-    timestamp = character(),
-    fs = integer()
+  expect_named(flowcam:::.empty_image_tibble(FALSE), "filename")
+  expect_named(
+    flowcam:::.empty_image_tibble(TRUE),
+    c("camId", "filename", "timestamp", "fs")
   )
-  expect_named(r_raw, c("camId", "filename", "timestamp", "fs"))
-  expect_equal(nrow(r_raw), 0L)
 })
 
 test_that("build_image_url() constructs correct small URL", {

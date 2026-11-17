@@ -55,15 +55,7 @@ get_network_cameras <- function(
   direction = c("upstream", "downstream", "both"),
   distance_km = 100
 ) {
-  .nims_enter()
-  on.exit(.nims_exit(), add = TRUE)
-
-  rlang::check_installed(
-    "dataRetrieval",
-    reason = "to navigate stream networks via the USGS NLDI"
-  )
-
-  direction <- rlang::arg_match(direction)
+  direction <- match.arg(direction)
 
   ids <- .resolve_site_id(site_id, cam_id)
   site_id <- ids$site_id
@@ -159,7 +151,7 @@ get_network_cameras <- function(
   )
 }
 
-#' @keywords internal
+# Return an empty network-camera tibble with stable column types.
 .empty_network_tibble <- function() {
   tibble::tibble(
     site_id = character(),

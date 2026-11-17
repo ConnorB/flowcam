@@ -1,16 +1,6 @@
 NIMS_BASE_URL <- "https://api.waterdata.usgs.gov/nims/v0"
 
-#' Perform a request against the NIMS API
-#'
-#' Internal helper. Builds an httr2 request with the appropriate base URL,
-#' User-Agent, optional API key header, and query parameters, then performs
-#' the request and parses the JSON response body.
-#'
-#' @param endpoint Character string, e.g. `"/cameras"` or `"/listFiles"`.
-#' @param query Named list of query parameters. `NULL` values are dropped.
-#'
-#' @return A parsed R object (list or vector) from the JSON response.
-#' @keywords internal
+# Perform a request against the NIMS API and parse its JSON response.
 nims_request <- function(endpoint, query = list()) {
   url <- paste0(NIMS_BASE_URL, endpoint)
 
@@ -25,8 +15,8 @@ nims_request <- function(endpoint, query = list()) {
   req <- httr2::request(url)
   req <- httr2::req_user_agent(req, ua)
 
-  key <- get_api_key()
-  if (!is.null(key)) {
+  key <- Sys.getenv("API_USGS_PAT")
+  if (nzchar(key)) {
     req <- httr2::req_headers_redacted(req, `X-Api-Key` = key)
   }
 
@@ -55,13 +45,6 @@ nims_request <- function(endpoint, query = list()) {
   req <- httr2::req_timeout(req, seconds = 60)
 
   resp <- httr2::req_perform(req)
-
-  if (!is.null(key)) {
-    remaining <- httr2::resp_header(resp, "x-ratelimit-remaining")
-    if (!is.null(remaining)) {
-      .nims_state$remaining <- remaining
-    }
-  }
 
   httr2::resp_body_json(resp, simplifyVector = FALSE)
 }

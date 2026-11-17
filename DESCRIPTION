@@ -33,21 +33,17 @@ Imports:
     cli (>= 3.0.0),
     httr2 (>= 1.0.0),
     lifecycle,
-    rlang (>= 1.0.0),
     tibble (>= 3.0.0)
 Suggests:
     av,
     dataRetrieval (>= 2.7.17),
     gifski,
-    sf,
     httptest2,
     jpeg,
     knitr,
     png,
     quarto,
-    testthat (>= 3.0.0),
-    withr
+    testthat (>= 3.0.0)
 VignetteBuilder: quarto
 Config/testthat/edition: 3
-Config/roxygen2/version: 8.0.0.9000
-RoxygenNote: 8.0.0.9000
+Config/roxygen2/version: 8.1.1.9000

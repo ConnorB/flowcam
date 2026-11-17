@@ -66,14 +66,6 @@ get_site_field_measurements <- function(
   time = NULL,
   parameter_code = "00060"
 ) {
-  .nims_enter()
-  on.exit(.nims_exit(), add = TRUE)
-
-  rlang::check_installed(
-    "dataRetrieval",
-    reason = "to retrieve field measurements from the USGS Water Data API"
-  )
-
   validate_parameter_code(parameter_code)
 
   ids <- .resolve_site_id(site_id, cam_id)
@@ -84,13 +76,11 @@ get_site_field_measurements <- function(
   dr_time <- .build_dr_time(time)
 
   raw <- tryCatch(
-    .with_usgs_quota(
-      dataRetrieval::read_waterdata_field_measurements(
-        monitoring_location_id = ml_id,
-        parameter_code = pcode_arg,
-        time = dr_time,
-        skipGeometry = TRUE
-      )
+    dataRetrieval::read_waterdata_field_measurements(
+      monitoring_location_id = ml_id,
+      parameter_code = pcode_arg,
+      time = dr_time,
+      skipGeometry = TRUE
     ),
     error = function(e) {
       cli::cli_abort(

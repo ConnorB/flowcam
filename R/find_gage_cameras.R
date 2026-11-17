@@ -32,14 +32,6 @@
 #' find_gage_cameras("05366800", include_availability = FALSE)
 #' }
 find_gage_cameras <- function(site_id, include_availability = TRUE) {
-  .nims_enter()
-  on.exit(.nims_exit(), add = TRUE)
-
-  rlang::check_installed(
-    "dataRetrieval",
-    reason = "to enrich camera records with NWIS site metadata"
-  )
-
   site_id <- normalize_site_id(site_id)
 
   cameras <- find_cameras(site_id = site_id)
@@ -50,10 +42,8 @@ find_gage_cameras <- function(site_id, include_availability = TRUE) {
   }
 
   site_info <- tryCatch(
-    .with_usgs_quota(
-      dataRetrieval::read_waterdata_monitoring_location(
-        monitoring_location_id = paste0("USGS-", site_id)
-      )
+    dataRetrieval::read_waterdata_monitoring_location(
+      monitoring_location_id = paste0("USGS-", site_id)
     ),
     error = function(e) {
       cli::cli_warn(

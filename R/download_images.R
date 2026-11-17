@@ -58,9 +58,6 @@ download_images <- function(
   overwrite = FALSE,
   site_id = NULL
 ) {
-  .nims_enter()
-  on.exit(.nims_exit(), add = TRUE)
-
   size <- match.arg(size, c("small", "overlay", "thumb"))
 
   if (!is.null(cam_id) && !is.null(site_id)) {

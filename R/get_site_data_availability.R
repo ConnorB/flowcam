@@ -54,14 +54,6 @@ get_site_data_availability <- function(
   cam_id = NULL,
   parameter_code = NA_character_
 ) {
-  .nims_enter()
-  on.exit(.nims_exit(), add = TRUE)
-
-  rlang::check_installed(
-    "dataRetrieval",
-    reason = "to retrieve time series metadata from the USGS Water Data API"
-  )
-
   validate_parameter_code(parameter_code)
 
   ids <- .resolve_site_id(site_id, cam_id)
@@ -69,22 +61,20 @@ get_site_data_availability <- function(
   ml_id <- ids$ml_id
 
   raw <- tryCatch(
-    .with_usgs_quota(
-      dataRetrieval::read_waterdata_ts_meta(
-        monitoring_location_id = ml_id,
-        parameter_code = parameter_code,
-        properties = c(
-          "monitoring_location_id",
-          "parameter_code",
-          "parameter_name",
-          "unit_of_measure",
-          "begin_utc",
-          "end_utc",
-          "statistic_id",
-          "time_series_id"
-        ),
-        skipGeometry = TRUE
-      )
+    dataRetrieval::read_waterdata_ts_meta(
+      monitoring_location_id = ml_id,
+      parameter_code = parameter_code,
+      properties = c(
+        "monitoring_location_id",
+        "parameter_code",
+        "parameter_name",
+        "unit_of_measure",
+        "begin_utc",
+        "end_utc",
+        "statistic_id",
+        "time_series_id"
+      ),
+      skipGeometry = TRUE
     ),
     error = function(e) {
       cli::cli_abort(

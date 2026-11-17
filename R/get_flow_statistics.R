@@ -89,15 +89,7 @@ get_flow_statistics <- function(
   computation = "percentile",
   time = NULL
 ) {
-  .nims_enter()
-  on.exit(.nims_exit(), add = TRUE)
-
-  rlang::check_installed(
-    c("dataRetrieval", "sf"),
-    reason = "to retrieve flow statistics from the USGS Water Data API"
-  )
-
-  type <- rlang::arg_match(type)
+  type <- match.arg(type)
 
   validate_parameter_code(parameter_code)
 
@@ -113,12 +105,10 @@ get_flow_statistics <- function(
 
   if (type == "daily_normals") {
     raw <- tryCatch(
-      .with_usgs_quota(
-        dataRetrieval::read_waterdata_stats_por(
-          monitoring_location_id = ml_id,
-          parameter_code = parameter_code,
-          computation_type = computation_arg
-        )
+      dataRetrieval::read_waterdata_stats_por(
+        monitoring_location_id = ml_id,
+        parameter_code = parameter_code,
+        computation_type = computation_arg
       ),
       error = function(e) {
         cli::cli_abort(
@@ -134,8 +124,6 @@ get_flow_statistics <- function(
       return(.empty_stats_tibble("daily_normals"))
     }
 
-    raw <- sf::st_drop_geometry(raw)
-
     month_day <- if ("time_of_year" %in% names(raw)) {
       raw$time_of_year
     } else if (all(c("month_nu", "day_nu") %in% names(raw))) {
@@ -147,56 +135,18 @@ get_flow_statistics <- function(
         "Could not find daily-normal month/day columns in USGS response."
       )
     }
-
-    percentile_int <- suppressWarnings(as.integer(raw$percentile))
-    if (any(is.na(percentile_int) & !is.na(raw$percentile))) {
-      cli::cli_warn(
-        "Some {.field percentile} values could not be coerced to integer and \\
-         were set to {.code NA}."
-      )
-    }
-    sample_count_int <- suppressWarnings(as.integer(raw$sample_count))
-    if (any(is.na(sample_count_int) & !is.na(raw$sample_count))) {
-      cli::cli_warn(
-        "Some {.field sample_count} values could not be coerced to integer and \\
-         were set to {.code NA}."
-      )
-    }
-
-    tibble::tibble(
-      site_id = sub("^USGS-", "", raw$monitoring_location_id),
-      parameter_code = raw$parameter_code,
-      unit_of_measure = raw$unit_of_measure,
-      month_day = month_day,
-      computation = raw$computation,
-      percentile = percentile_int,
-      value = raw$value,
-      sample_count = sample_count_int
-    )
   } else {
     dr_time <- .build_dr_time(time)
-    start_date <- if (length(dr_time) == 2L) dr_time[[1L]] else NA_character_
-    end_date <- if (length(dr_time) == 2L) {
-      dr_time[[2L]]
-    } else if (!is.na(dr_time[[1L]])) {
-      NA_character_
-    } else {
-      NA_character_
-    }
-    if (length(dr_time) == 1L && !is.na(dr_time)) {
-      start_date <- dr_time
-      end_date <- NA_character_
-    }
+    start_date <- dr_time[[1L]]
+    end_date <- if (length(dr_time) == 2L) dr_time[[2L]] else NA_character_
 
     raw <- tryCatch(
-      .with_usgs_quota(
-        dataRetrieval::read_waterdata_stats_daterange(
-          monitoring_location_id = ml_id,
-          parameter_code = parameter_code,
-          computation_type = computation_arg,
-          start_date = start_date,
-          end_date = end_date
-        )
+      dataRetrieval::read_waterdata_stats_daterange(
+        monitoring_location_id = ml_id,
+        parameter_code = parameter_code,
+        computation_type = computation_arg,
+        start_date = start_date,
+        end_date = end_date
       ),
       error = function(e) {
         cli::cli_abort(
@@ -211,24 +161,35 @@ get_flow_statistics <- function(
     if (nrow(raw) == 0L) {
       return(.empty_stats_tibble("period_summary"))
     }
+  }
 
-    raw <- sf::st_drop_geometry(raw)
+  percentile_int <- suppressWarnings(as.integer(raw$percentile))
+  if (any(is.na(percentile_int) & !is.na(raw$percentile))) {
+    cli::cli_warn(
+      "Some {.field percentile} values could not be coerced to integer and \\
+       were set to {.code NA}."
+    )
+  }
+  sample_count_int <- suppressWarnings(as.integer(raw$sample_count))
+  if (any(is.na(sample_count_int) & !is.na(raw$sample_count))) {
+    cli::cli_warn(
+      "Some {.field sample_count} values could not be coerced to integer and \\
+       were set to {.code NA}."
+    )
+  }
 
-    percentile_int <- suppressWarnings(as.integer(raw$percentile))
-    if (any(is.na(percentile_int) & !is.na(raw$percentile))) {
-      cli::cli_warn(
-        "Some {.field percentile} values could not be coerced to integer and \\
-         were set to {.code NA}."
-      )
-    }
-    sample_count_int <- suppressWarnings(as.integer(raw$sample_count))
-    if (any(is.na(sample_count_int) & !is.na(raw$sample_count))) {
-      cli::cli_warn(
-        "Some {.field sample_count} values could not be coerced to integer and \\
-         were set to {.code NA}."
-      )
-    }
-
+  if (type == "daily_normals") {
+    tibble::tibble(
+      site_id = sub("^USGS-", "", raw$monitoring_location_id),
+      parameter_code = raw$parameter_code,
+      unit_of_measure = raw$unit_of_measure,
+      month_day = month_day,
+      computation = raw$computation,
+      percentile = percentile_int,
+      value = raw$value,
+      sample_count = sample_count_int
+    )
+  } else {
     tibble::tibble(
       site_id = sub("^USGS-", "", raw$monitoring_location_id),
       parameter_code = raw$parameter_code,
@@ -244,8 +205,7 @@ get_flow_statistics <- function(
   }
 }
 
-#' Build empty zero-row tibbles for get_flow_statistics return paths
-#' @keywords internal
+# Build an empty flow-statistics tibble with stable column types.
 .empty_stats_tibble <- function(type) {
   base <- tibble::tibble(
     site_id = character(),

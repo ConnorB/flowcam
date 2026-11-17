@@ -85,15 +85,7 @@ get_site_streamflow <- function(
   type = c("continuous", "daily"),
   water_year = FALSE
 ) {
-  .nims_enter()
-  on.exit(.nims_exit(), add = TRUE)
-
-  rlang::check_installed(
-    "dataRetrieval",
-    reason = "to retrieve streamflow data from the USGS Water Data API"
-  )
-
-  type <- rlang::arg_match(type)
+  type <- match.arg(type)
 
   ids <- .resolve_site_id(site_id, cam_id)
   site_id <- ids$site_id
@@ -104,23 +96,21 @@ get_site_streamflow <- function(
   dr_time <- .build_dr_time(time)
 
   raw <- tryCatch(
-    .with_usgs_quota(
-      if (type == "continuous") {
-        dataRetrieval::read_waterdata_continuous(
-          monitoring_location_id = ml_id,
-          parameter_code = parameter_code,
-          time = dr_time
-        )
-      } else {
-        dataRetrieval::read_waterdata_daily(
-          monitoring_location_id = ml_id,
-          parameter_code = parameter_code,
-          statistic_id = "00003",
-          time = dr_time,
-          skipGeometry = TRUE
-        )
-      }
-    ),
+    if (type == "continuous") {
+      dataRetrieval::read_waterdata_continuous(
+        monitoring_location_id = ml_id,
+        parameter_code = parameter_code,
+        time = dr_time
+      )
+    } else {
+      dataRetrieval::read_waterdata_daily(
+        monitoring_location_id = ml_id,
+        parameter_code = parameter_code,
+        statistic_id = "00003",
+        time = dr_time,
+        skipGeometry = TRUE
+      )
+    },
     error = function(e) {
       cli::cli_abort(
         c(

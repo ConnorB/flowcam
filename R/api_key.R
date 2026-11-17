@@ -1,15 +1,3 @@
-#' Retrieve the USGS API key from the environment
-#'
-#' Reads `API_USGS_PAT` from the environment. Returns `NULL` (not `""`) when
-#' unset, following the same convention as [dataRetrieval].
-#'
-#' @return A single character string, or `NULL` if the variable is unset.
-#' @keywords internal
-get_api_key <- function() {
-  key <- Sys.getenv("API_USGS_PAT")
-  if (nzchar(key)) key else NULL
-}
-
 #' Store your USGS API key in .Renviron
 #'
 #' Writes `API_USGS_PAT` to the user's `~/.Renviron` file and applies it immediately in the

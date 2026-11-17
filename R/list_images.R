@@ -81,14 +81,9 @@ list_images <- function(
   raw_item = FALSE,
   site_id = NULL
 ) {
-  .nims_enter()
-  on.exit(.nims_exit(), add = TRUE)
-
   if (!is.null(cam_id) && !is.null(site_id)) {
     cli::cli_abort("Provide {.arg cam_id} or {.arg site_id}, not both.")
   }
-
-  cam_meta <- NULL
 
   if (is.null(cam_id)) {
     if (is.null(site_id)) {
@@ -108,7 +103,6 @@ list_images <- function(
       )
     }
     cam_id <- cams$camId[[1L]]
-    cam_meta <- cams[1L, ]
   } else if (!is.character(cam_id) || length(cam_id) != 1L || !nzchar(cam_id)) {
     cli::cli_abort("{.arg cam_id} must be a single non-empty character string.")
   }
@@ -125,64 +119,6 @@ list_images <- function(
   limit <- as.integer(limit)
 
   time_range <- parse_time_arg(time)
-
-  if (!is.null(time)) {
-    if (is.null(cam_meta)) {
-      cam_meta <- find_cameras(cam_id = cam_id)
-    }
-    if (nrow(cam_meta) > 0L) {
-      created <- cam_meta[["createdDate"]][[1L]]
-      newest <- cam_meta[["newestImageDT"]][[1L]]
-
-      parse_t <- function(s) {
-        if (is.null(s)) {
-          return(NULL)
-        }
-        r <- tryCatch(
-          as.POSIXct(sub("T", " ", s), tz = "UTC"),
-          error = function(e) NULL
-        )
-        if (!is.null(r) && !is.na(r)) r else NULL
-      }
-
-      after_t <- parse_t(time_range$after)
-      before_t <- parse_t(time_range$before)
-
-      # Clamp start: must be >= createdDate and <= newestImageDT
-      if (!is.null(after_t)) {
-        if (!is.null(created) && !is.na(created) && after_t < created) {
-          cli::cli_inform(
-            "Adjusting start from {.val {format(after_t, '%Y-%m-%d')}} to \\
-             camera creation date ({.val {format(created, '%Y-%m-%d')}})."
-          )
-          time_range$after <- format(created, "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-        } else if (!is.null(newest) && !is.na(newest) && after_t > newest) {
-          cli::cli_inform(
-            "Adjusting start from {.val {format(after_t, '%Y-%m-%d')}} to \\
-             newest image date ({.val {format(newest, '%Y-%m-%d')}})."
-          )
-          time_range$after <- format(newest, "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-        }
-      }
-
-      # Clamp end: must be >= createdDate and <= newestImageDT
-      if (!is.null(before_t)) {
-        if (!is.null(newest) && !is.na(newest) && before_t > newest) {
-          cli::cli_inform(
-            "Adjusting end from {.val {format(before_t, '%Y-%m-%d')}} to \\
-             newest image date ({.val {format(newest, '%Y-%m-%d')}})."
-          )
-          time_range$before <- format(newest, "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-        } else if (!is.null(created) && !is.na(created) && before_t < created) {
-          cli::cli_inform(
-            "Adjusting end from {.val {format(before_t, '%Y-%m-%d')}} to \\
-             camera creation date ({.val {format(created, '%Y-%m-%d')}})."
-          )
-          time_range$before <- format(created, "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-        }
-      }
-    }
-  }
 
   # Paginate oldest-first using 'after' as a timestamp cursor.
   # rawItem=TRUE is always requested so we have timestamps to advance the cursor.

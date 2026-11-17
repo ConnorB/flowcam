@@ -1,15 +1,3 @@
-test_that("get_api_key() returns NULL when env var is unset", {
-  withr::with_envvar(c(API_USGS_PAT = ""), {
-    expect_null(flowcam:::get_api_key())
-  })
-})
-
-test_that("get_api_key() returns key when env var is set", {
-  withr::with_envvar(c(API_USGS_PAT = "test_key_abc"), {
-    expect_equal(flowcam:::get_api_key(), "test_key_abc")
-  })
-})
-
 test_that("format_datetime() returns NULL for NULL input", {
   expect_null(flowcam:::format_datetime(NULL))
 })
@@ -72,4 +60,29 @@ test_that("parse_cameras() stores ingest as a list-column", {
 test_that("parse_cameras() returns correct number of rows", {
   result <- flowcam:::parse_cameras(camera_list)
   expect_equal(nrow(result), 2L)
+})
+
+test_that("get_flow_statistics() shapes daily normals", {
+  skip_if_not_installed("dataRetrieval")
+  local_mocked_bindings(
+    read_waterdata_stats_por = function(...) {
+      data.frame(
+        monitoring_location_id = "USGS-01234567",
+        parameter_code = "00060",
+        unit_of_measure = "ft3/s",
+        time_of_year = "01-01",
+        computation = "percentile",
+        percentile = "50",
+        value = 100,
+        sample_count = "25"
+      )
+    },
+    .package = "dataRetrieval"
+  )
+
+  result <- get_flow_statistics("01234567")
+
+  expect_equal(result$month_day, "01-01")
+  expect_equal(result$percentile, 50L)
+  expect_equal(result$sample_count, 25L)
 })

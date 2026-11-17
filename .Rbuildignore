@@ -2,7 +2,6 @@
 ^\.Rproj\.user$
 ^\.positai$
 ^\.claude$
-^openapi\.json$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
